@@ -1,0 +1,26 @@
+# Dépendances
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Variables d'environnement locales
+.env
+.env.local
+.env.*.local
+
+# Builds & caches
+*.tsbuildinfo
+.turbo/
+.vercel/
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+*.log
+.gradle-cache/
+
+# Python
+__pycache__/
+*.pyc

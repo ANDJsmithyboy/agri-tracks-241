@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * POUFA — Design tokens
+ * Palette institutionnelle (cahier des charges, § UI/UX) :
+ *   primaire #176B45 · forêt #103D30 · encre #14241E
+ *   succès #168451 · avertissement #D48B19 · critique #C63838 · info #3172C7
+ */
+:root {
+  --radius: 0.625rem;
+
+  --background: #f7f9f7;
+  --foreground: #14241e;
+  --card: #ffffff;
+  --card-foreground: #14241e;
+  --popover: #ffffff;
+  --popover-foreground: #14241e;
+  --primary: #176b45;
+  --primary-foreground: #ffffff;
+  --secondary: #eff4f0;
+  --secondary-foreground: #103d30;
+  --muted: #eff4f0;
+  --muted-foreground: #52675d;
+  --accent: #e2eee7;
+  --accent-foreground: #103d30;
+  --destructive: #c63838;
+  --destructive-foreground: #ffffff;
+  --border: #dfe8e2;
+  --input: #dfe8e2;
+  --ring: #176b45;
+
+  --success: #168451;
+  --success-foreground: #ffffff;
+  --warning: #d48b19;
+  --warning-foreground: #14241e;
+  --info: #3172c7;
+  --info-foreground: #ffffff;
+
+  --chart-1: #176b45;
+  --chart-2: #3172c7;
+  --chart-3: #d48b19;
+  --chart-4: #7a5cc7;
+  --chart-5: #c63838;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #14241e;
+  --sidebar-primary: #176b45;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e2eee7;
+  --sidebar-accent-foreground: #103d30;
+  --sidebar-border: #dfe8e2;
+  --sidebar-ring: #176b45;
+}
+
+.dark {
+  --background: #0c1713;
+  --foreground: #e8f0eb;
+  --card: #12211b;
+  --card-foreground: #e8f0eb;
+  --popover: #12211b;
+  --popover-foreground: #e8f0eb;
+  --primary: #3aa476;
+  --primary-foreground: #081510;
+  --secondary: #1b2e26;
+  --secondary-foreground: #dce9e2;
+  --muted: #1b2e26;
+  --muted-foreground: #8fa89c;
+  --accent: #1e3a2e;
+  --accent-foreground: #dce9e2;
+  --destructive: #d9534f;
+  --destructive-foreground: #ffffff;
+  --border: #22382e;
+  --input: #22382e;
+  --ring: #3aa476;
+
+  --success: #2fbf7f;
+  --success-foreground: #081510;
+  --warning: #e0a13c;
+  --warning-foreground: #14241e;
+  --info: #5b8fd9;
+  --info-foreground: #ffffff;
+
+  --chart-1: #3aa476;
+  --chart-2: #5b8fd9;
+  --chart-3: #e0a13c;
+  --chart-4: #9a7fd0;
+  --chart-5: #d9534f;
+
+  --sidebar: #0f1d18;
+  --sidebar-foreground: #e8f0eb;
+  --sidebar-primary: #3aa476;
+  --sidebar-primary-foreground: #081510;
+  --sidebar-accent: #1e3a2e;
+  --sidebar-accent-foreground: #dce9e2;
+  --sidebar-border: #22382e;
+  --sidebar-ring: #3aa476;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}

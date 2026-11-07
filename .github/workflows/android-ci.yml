@@ -1,0 +1,47 @@
+name: Android CI
+
+on:
+  push:
+    branches: [main]
+    paths: ["apps/android/**", ".github/workflows/android-ci.yml"]
+  pull_request:
+    paths: ["apps/android/**"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        env:
+          # Clé publishable Clerk = config publique client (pas de secret).
+          # Créer le secret GitHub POUFA_CLERK_PUBLISHABLE_KEY ou laisser vide
+          # (l'app compile sans elle ; Clerk.init est skippé si blank).
+          POUFA_CLERK_PUBLISHABLE_KEY: ${{ secrets.POUFA_CLERK_PUBLISHABLE_KEY }}
+          POUFA_API_BASE_URL: ${{ vars.POUFA_API_BASE_URL }}
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Unit tests
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: Lint
+        run: ./gradlew lintDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: poufa-debug-apk
+          path: apps/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
