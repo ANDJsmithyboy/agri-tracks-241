@@ -84,3 +84,4 @@ test.describe("POUFA AI — Interface conversationnelle", () => {
     await expect(page.getByText("Analyser ma bande")).toBeVisible();
   });
 });
+

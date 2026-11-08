@@ -60,42 +60,44 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Tableau de bord"
-        description="Vue consolidée des élevages, des performances et des opérations nationales."
-        badge={<Badge variant="brand">National · Neon Live</Badge>}
-        actions={
-          <>
-            <Select defaultValue="Toutes les provinces">
-              <SelectTrigger className="w-44">
-                <SelectValue placeholder="Province" />
-              </SelectTrigger>
-              <SelectContent>
-                {GABON_PROVINCES.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" asChild>
-              <Link href="/rapports">
-                <FileText className="size-4" aria-hidden />
-                Rapports
-              </Link>
-            </Button>
-            <Button variant="brand" asChild>
-              <Link href="/saisie">
-                <Plus className="size-4" aria-hidden />
-                Nouvelle saisie
-              </Link>
-            </Button>
-          </>
-        }
-      />
+      <div data-tour="dashboard-header">
+        <PageHeader
+          title="Tableau de bord"
+          description="Vue consolidée des élevages, des performances et des opérations nationales."
+          badge={<Badge variant="brand">National · Neon Live</Badge>}
+          actions={
+            <>
+              <Select defaultValue="Toutes les provinces">
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder="Province" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GABON_PROVINCES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" asChild>
+                <Link href="/rapports">
+                  <FileText className="size-4" aria-hidden />
+                  Rapports
+                </Link>
+              </Button>
+              <Button variant="brand" asChild>
+                <Link href="/saisie">
+                  <Plus className="size-4" aria-hidden />
+                  Nouvelle saisie
+                </Link>
+              </Button>
+            </>
+          }
+        />
+      </div>
 
       {/* KPI Cards — Exact arithmetic, no fabricated metrics */}
-      <section aria-label="Indicateurs clés">
+      <section aria-label="Indicateurs clés" data-tour="kpi-cards">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
           <StatCard label="Fermes enregistrées" value={farms.length} hint="Sur 150 prévues au Gabon" icon={Building2} />
           <StatCard label="Fermes opérationnelles" value={activeFarms} hint="Actives sur le terrain" icon={Activity} />

@@ -20,11 +20,27 @@ function NavLink({
     pathname === item.href || pathname.startsWith(`${item.href}/`);
   const Icon = item.icon;
 
+  const tourAttr =
+    item.href === "/bandes"
+      ? "nav-bandes"
+      : item.href === "/intrants"
+      ? "nav-intrants"
+      : item.href === "/sante"
+      ? "nav-sante"
+      : item.href === "/tracabilite"
+      ? "nav-tracabilite"
+      : item.href === "/rapports"
+      ? "nav-rapports"
+      : item.href === "/ia"
+      ? "nav-poufa-ai"
+      : undefined;
+
   return (
     <li>
       <Link
         href={item.href}
         onClick={onNavigate}
+        data-tour={tourAttr}
         title={collapsed ? item.label : undefined}
         aria-current={active ? "page" : undefined}
         className={cn(

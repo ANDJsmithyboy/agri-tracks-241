@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { Bell, Menu, Search } from "lucide-react";
+import { Bell, Compass, Menu, Search, Smartphone } from "lucide-react";
 import { toast } from "sonner";
+import { startGuidedTour } from "@/components/onboarding/guided-tour";
 import { CommandMenu } from "@/components/layout/command-menu";
 import { PoufaLogo } from "@/components/poufa-logo";
 import { RoleSwitcher } from "@/components/layout/role-switcher";
@@ -74,6 +76,7 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
         <Button
           variant="outline"
           size="sm"
+          data-tour="search-bar"
           className="hidden h-8 gap-2 text-muted-foreground md:inline-flex hover:border-foreground/20 text-xs"
           onClick={() => setCommandOpen(true)}
         >
@@ -88,9 +91,38 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
           <SyncStatusBadge />
         </div>
 
-        <RoleSwitcher className="hidden md:inline-flex" />
+        <div data-tour="role-switcher" className="hidden md:inline-flex">
+          <RoleSwitcher />
+        </div>
 
-        <ThemeToggle />
+        <div data-tour="theme-toggle">
+          <ThemeToggle />
+        </div>
+
+        {/* Bouton Visite Guidée */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => startGuidedTour()}
+          title="Lancer la visite interactive"
+          className="size-9 text-muted-foreground hover:text-foreground"
+          aria-label="Lancer la visite interactive"
+        >
+          <Compass className="size-4" aria-hidden />
+        </Button>
+
+        {/* Raccourci Téléchargement APK */}
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild
+          title="Télécharger l'APK Android"
+          className="size-9 text-muted-foreground hover:text-foreground"
+        >
+          <Link href="/telecharger" aria-label="Télécharger l'APK Android">
+            <Smartphone className="size-4" aria-hidden />
+          </Link>
+        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

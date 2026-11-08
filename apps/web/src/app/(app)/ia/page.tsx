@@ -10,13 +10,17 @@ import {
 } from "react";
 import {
   AlertCircle,
+  ArrowUp,
   Check,
+  Columns2,
   Copy,
   History,
+  Maximize2,
   MessageSquarePlus,
+  Minimize2,
   RotateCcw,
   Search,
-  Send,
+  Sparkles,
   Square,
   Trash2,
 } from "lucide-react";
@@ -157,6 +161,8 @@ export default function PoufaAiPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [lastPrompt, setLastPrompt] = useState<string | null>(null);
+  const [layoutMode, setLayoutMode] = useState<"focus" | "wide">("focus");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -494,14 +500,23 @@ export default function PoufaAiPage() {
   );
 
   return (
-    <div className="flex h-[calc(100dvh-7.5rem)] min-h-[34rem] gap-5">
+    <div
+      className={cn(
+        "flex gap-5 transition-all duration-200",
+        isFullscreen
+          ? "fixed inset-0 z-50 h-dvh bg-background p-3 sm:p-6"
+          : "h-[calc(100dvh-7.5rem)] min-h-[34rem]",
+      )}
+    >
       {/* Desktop Conversation Sidebar */}
-      <aside
-        aria-label="Historique des conversations POUFA AI"
-        className="hidden w-64 shrink-0 flex-col rounded-xl border border-border bg-card p-3.5 lg:flex"
-      >
-        {HistoryList}
-      </aside>
+      {!isFullscreen && (
+        <aside
+          aria-label="Historique des conversations POUFA AI"
+          className="hidden w-64 shrink-0 flex-col rounded-xl border border-border bg-card p-3.5 lg:flex"
+        >
+          {HistoryList}
+        </aside>
+      )}
 
       {/* Main Chat Workspace */}
       <section className="flex min-w-0 flex-1 flex-col rounded-xl border border-border bg-card">
@@ -519,12 +534,50 @@ export default function PoufaAiPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Toggle Mode Focus (760px) / Large (1200px) */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                setLayoutMode(layoutMode === "focus" ? "wide" : "focus")
+              }
+              title={
+                layoutMode === "focus"
+                  ? "Passer en mode grand écran (1200px)"
+                  : "Passer en mode concentration (760px)"
+              }
+              className="hidden sm:inline-flex h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <Columns2 className="size-3.5" aria-hidden />
+              <span>{layoutMode === "focus" ? "Focus" : "Large"}</span>
+            </Button>
+
+            {/* Plein écran immersif */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              title={
+                isFullscreen
+                  ? "Quitter le plein écran"
+                  : "Mode plein écran immersif"
+              }
+              className="size-8 text-muted-foreground hover:text-foreground"
+              aria-label="Basculer le plein écran"
+            >
+              {isFullscreen ? (
+                <Minimize2 className="size-4" aria-hidden />
+              ) : (
+                <Maximize2 className="size-4" aria-hidden />
+              )}
+            </Button>
+
             <Button
               variant="ghost"
               size="sm"
               onClick={handleNewConversation}
-              className="hidden sm:inline-flex"
+              className="hidden sm:inline-flex h-8"
             >
               <MessageSquarePlus className="size-4" aria-hidden />
               Nouvelle
@@ -536,7 +589,7 @@ export default function PoufaAiPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="lg:hidden"
+                  className="lg:hidden size-8 p-0"
                   aria-label="Historique des conversations"
                 >
                   <History className="size-4" aria-hidden />
@@ -566,7 +619,14 @@ export default function PoufaAiPage() {
           className="flex-1 overflow-y-auto px-4 py-6 sm:px-8"
         >
           {messages.length === 0 ? (
-            <div className="mx-auto flex h-full max-w-xl flex-col items-center justify-center text-center">
+            <div
+              className={cn(
+                "flex h-full flex-col items-center justify-center text-center",
+                layoutMode === "focus"
+                  ? "max-w-[760px] mx-auto"
+                  : "max-w-[1200px] mx-auto",
+              )}
+            >
               <PoufaEmblem className="mb-4 size-14" />
               <h2 className="text-xl font-semibold tracking-tight text-foreground">
                 POUFA AI
@@ -596,7 +656,14 @@ export default function PoufaAiPage() {
               </div>
             </div>
           ) : (
-            <div className="mx-auto max-w-2xl space-y-6">
+            <div
+              className={cn(
+                "space-y-6",
+                layoutMode === "focus"
+                  ? "max-w-[760px] mx-auto"
+                  : "max-w-[1200px] mx-auto",
+              )}
+            >
               {messages.map((msg) => {
                 const isUser = msg.role === "user";
                 return (
@@ -673,7 +740,14 @@ export default function PoufaAiPage() {
 
         {/* Error Recovery Banner */}
         {errorBanner && (
-          <div className="mx-4 mb-2 flex items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive sm:mx-8">
+          <div
+            className={cn(
+              "mx-4 mb-2 flex items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive",
+              layoutMode === "focus"
+                ? "max-w-[760px] mx-auto w-full"
+                : "max-w-[1200px] mx-auto w-full",
+            )}
+          >
             <div className="flex items-center gap-2">
               <AlertCircle className="size-4 shrink-0" aria-hidden />
               <span>{errorBanner}</span>
@@ -694,7 +768,14 @@ export default function PoufaAiPage() {
 
         {/* Persistent Bottom Composer */}
         <footer className="border-t border-border p-3 sm:px-6 sm:py-4">
-          <div className="mx-auto flex max-w-2xl items-end gap-2.5 rounded-2xl border border-input bg-card px-3.5 py-2.5 shadow-xs transition-all focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
+          <div
+            className={cn(
+              "flex items-end gap-2.5 rounded-2xl border border-input bg-card px-3.5 py-2.5 shadow-xs transition-all focus-within:border-ring focus-within:ring-1 focus-within:ring-ring",
+              layoutMode === "focus"
+                ? "max-w-[760px] mx-auto"
+                : "max-w-[1200px] mx-auto",
+            )}
+          >
             <textarea
               rows={1}
               value={input}
@@ -711,7 +792,7 @@ export default function PoufaAiPage() {
                 variant="outline"
                 onClick={handleStop}
                 aria-label="Arrêter la génération"
-                className="h-8 shrink-0 gap-1.5 rounded-lg px-3"
+                className="h-9 shrink-0 gap-1.5 rounded-full px-3.5"
               >
                 <Square className="size-3 fill-current" aria-hidden />
                 <span className="text-xs">Arrêter</span>
@@ -724,15 +805,26 @@ export default function PoufaAiPage() {
                 disabled={!input.trim()}
                 onClick={() => void sendMessage(input)}
                 aria-label="Envoyer le message"
-                className="size-8 shrink-0 rounded-lg p-0 flex items-center justify-center"
+                className="size-9 shrink-0 rounded-full p-0 flex items-center justify-center transition-transform active:scale-95 disabled:opacity-40 shadow-xs"
               >
-                <Send className="size-3.5 translate-x-[-0.5px] translate-y-[-0.5px]" aria-hidden />
+                <ArrowUp className="size-4 stroke-[2.5]" aria-hidden />
               </Button>
             )}
           </div>
-          <div className="mx-auto mt-2 flex max-w-2xl items-center justify-between px-1 text-[11px] text-muted-foreground">
-            <span>Données d&apos;élevage en lecture seule. Ne remplace pas un avis vétérinaire.</span>
-            <span className="hidden sm:inline font-mono text-[10px] text-muted-foreground/60">↵ Envoyer · ⇧↵ Ligne</span>
+          <div
+            className={cn(
+              "mt-2 flex items-center justify-between px-1 text-[11px] text-muted-foreground",
+              layoutMode === "focus"
+                ? "max-w-[760px] mx-auto"
+                : "max-w-[1200px] mx-auto",
+            )}
+          >
+            <span>
+              Données d&apos;élevage en lecture seule. Ne remplace pas un avis vétérinaire.
+            </span>
+            <span className="hidden sm:inline font-mono text-[10px] text-muted-foreground/60">
+              ↵ Envoyer · ⇧↵ Ligne
+            </span>
           </div>
         </footer>
       </section>

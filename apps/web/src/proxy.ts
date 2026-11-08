@@ -11,6 +11,8 @@ const isPublicRoute = createRouteMatcher([
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/trace(.*)",
+  "/telecharger(.*)",
+  "/api/android(.*)",
   "/api/health(.*)",
   "/manifest.webmanifest(.*)",
   "/icon.svg",

@@ -9,6 +9,7 @@ import {
   MobileMenuSheet,
 } from "@/components/layout/mobile-nav";
 import { OfflineBanner } from "@/components/layout/sync-status";
+import { WelcomeModal } from "@/components/onboarding/welcome-modal";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,6 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
       <MobileBottomNav onOpenMenu={() => setMenuOpen(true)} />
       <MobileMenuSheet open={menuOpen} onOpenChange={setMenuOpen} />
+      <WelcomeModal />
     </RoleProvider>
   );
 }

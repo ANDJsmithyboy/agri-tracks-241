@@ -56,7 +56,7 @@ export function ProductionChart() {
   }[metric];
 
   return (
-    <Card className="lg:col-span-2">
+    <Card className="lg:col-span-2" data-tour="production-chart">
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-2">
         <div>
           <CardTitle className="text-base font-semibold">

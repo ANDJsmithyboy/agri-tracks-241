@@ -7,6 +7,8 @@ import {
   Activity,
   ArrowRight,
   Bird,
+  Compass,
+  Download,
   FileCheck,
   FileText,
   Home,
@@ -16,11 +18,14 @@ import {
   Package,
   Plus,
   QrCode,
+  RotateCcw,
   ShieldAlert,
+  Smartphone,
   Sparkles,
   Sun,
   Truck,
 } from "lucide-react";
+import { startGuidedTour } from "@/components/onboarding/guided-tour";
 import {
   CommandDialog,
   CommandEmpty,
@@ -130,6 +135,31 @@ export function CommandMenu({
 
         <CommandSeparator />
 
+        <CommandGroup heading="Démonstration & Expérience KIMBA 2026">
+          <CommandItem onSelect={() => runCommand(() => startGuidedTour())}>
+            <Compass className="size-4 mr-2 text-[var(--brand-green)] dark:text-[var(--brand-neon)]" />
+            <span className="font-semibold text-foreground">Lancer la visite interactive</span>
+            <CommandShortcut>G V</CommandShortcut>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => router.push("/telecharger"))}>
+            <Smartphone className="size-4 mr-2" />
+            <span>Télécharger l&apos;APK Android (Terrain & Offline)</span>
+            <CommandShortcut>G D</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            onSelect={() =>
+              runCommand(() =>
+                window.dispatchEvent(new Event("open-poufa-welcome"))
+              )
+            }
+          >
+            <RotateCcw className="size-4 mr-2 text-muted-foreground" />
+            <span>Réafficher le panneau de bienvenue POUFA</span>
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator />
+
         <CommandGroup heading="Thème visuel (Design 2026)">
           <CommandItem onSelect={() => runCommand(() => setTheme("light"))}>
             <Sun className="size-4 mr-2" />
@@ -144,3 +174,4 @@ export function CommandMenu({
     </CommandDialog>
   );
 }
+
