@@ -10,7 +10,7 @@ from .routers import farms_router, router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if settings.database_url:
+    if settings.database_url and settings.auto_init_db:
         init_db()
     yield
 

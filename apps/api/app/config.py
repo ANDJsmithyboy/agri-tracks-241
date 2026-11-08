@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     database_url: str = ""
+    auto_init_db: bool = True
     clerk_issuer: str = ""
     clerk_jwks_url: str = ""
     clerk_authorized_parties: str = ""

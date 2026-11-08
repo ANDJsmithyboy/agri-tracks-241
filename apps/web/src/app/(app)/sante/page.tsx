@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Plus, ShieldAlert } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-import { TableSkeleton } from "@/components/table-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,8 +10,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { getHealthData } from "@/lib/poufa-queries";
 
-export default function SantePage() {
+export default async function SantePage() {
+  const declarations = await getHealthData();
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -37,7 +47,40 @@ export default function SantePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TableSkeleton rows={5} columns={5} />
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Ferme / Bande</TableHead>
+                  <TableHead>Nature</TableHead>
+                  <TableHead>Signes / Observations</TableHead>
+                  <TableHead className="text-right">Sujets</TableHead>
+                  <TableHead>Statut</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {declarations.map((d) => (
+                  <TableRow key={d.id}>
+                    <TableCell>{d.event_date}</TableCell>
+                    <TableCell className="font-medium">
+                      {d.farm_name} · <span className="font-mono text-xs">{d.band_code}</span>
+                    </TableCell>
+                    <TableCell>{d.problem_type}</TableCell>
+                    <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
+                      {d.signs}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {d.affected_count}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={d.status === "qualified" ? "default" : "secondary"}>
+                        {d.status === "qualified" ? "Qualifié" : "En revue"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
 

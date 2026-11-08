@@ -1,9 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+}
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { load(it) }
+    }
 }
 
 android {
@@ -21,18 +30,14 @@ android {
 
         // Clé publishable Clerk = config publique client (JAMAIS la secret key).
         // Renseigner dans local.properties : POUFA_CLERK_PUBLISHABLE_KEY=pk_test_...
-        val localProperties = java.util.Properties().apply {
-            val localPropertiesFile = rootProject.file("local.properties")
-            if (localPropertiesFile.exists()) {
-                localPropertiesFile.inputStream().use { load(it) }
-            }
-        }
-        val clerkKey = (project.findProperty("POUFA_CLERK_PUBLISHABLE_KEY") as String?)
+        val clerkKey: String = (project.findProperty("POUFA_CLERK_PUBLISHABLE_KEY") as String?)
             ?: localProperties.getProperty("POUFA_CLERK_PUBLISHABLE_KEY")
-            ?: System.getenv("POUFA_CLERK_PUBLISHABLE_KEY") ?: ""
-        val apiBaseUrl = (project.findProperty("POUFA_API_BASE_URL") as String?)
+            ?: System.getenv("POUFA_CLERK_PUBLISHABLE_KEY")
+            ?: ""
+        val apiBaseUrl: String = (project.findProperty("POUFA_API_BASE_URL") as String?)
             ?: localProperties.getProperty("POUFA_API_BASE_URL")
-            ?: System.getenv("POUFA_API_BASE_URL") ?: "http://10.0.2.2:8000"
+            ?: System.getenv("POUFA_API_BASE_URL")
+            ?: "http://10.0.2.2:8000"
         buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"$clerkKey\"")
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }

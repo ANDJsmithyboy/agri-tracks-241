@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -20,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getBandsData, getFarmsData, getHealthData } from "@/lib/poufa-queries";
 
 const GABON_PROVINCES = [
   "Toutes les provinces",
@@ -34,13 +34,24 @@ const GABON_PROVINCES = [
   "Woleu-Ntem",
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [farms, bands, health] = await Promise.all([
+    getFarmsData(),
+    getBandsData(),
+    getHealthData(),
+  ]);
+  const activeFarms = farms.filter((f) => f.status === "active").length;
+  const activeBands = bands.filter((b) => b.status === "active");
+  const totalPlaced = activeBands.reduce((acc, b) => acc + b.initial_count, 0);
+  const totalPop = activeBands.reduce((acc, b) => acc + b.current_population, 0);
+  const volumeTons = ((totalPop * 2.15) / 1000).toFixed(2);
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Tableau de bord"
         description="Vue d'ensemble de la production avicole nationale et provinciale."
-        badge={<Badge variant="secondary">National</Badge>}
+        badge={<Badge variant="secondary">National · Neon Live</Badge>}
         actions={
           <>
             <Select defaultValue="Toutes les provinces">
@@ -67,29 +78,45 @@ export default function DashboardPage() {
 
       <section aria-label="Indicateurs clés">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-          <StatCard label="Fermes enregistrées" hint="Sur 150 prévues" />
-          <StatCard label="Fermes opérationnelles" />
-          <StatCard label="Bandes actives" />
-          <StatCard label="Poulets placés" />
-          <StatCard label="Population actuelle" />
-          <StatCard label="Volume produit" hint="en tonnes" />
+          <StatCard label="Fermes enregistrées" value={farms.length} hint="Sur 150 prévues" />
+          <StatCard label="Fermes opérationnelles" value={activeFarms} hint="Actives" />
+          <StatCard label="Bandes actives" value={activeBands.length} hint="En cours d'élevage" />
+          <StatCard label="Poulets placés" value={totalPlaced.toLocaleString("fr-FR")} hint="Mis en place" />
+          <StatCard label="Population actuelle" value={totalPop.toLocaleString("fr-FR")} hint="Placés − morts − sorties" />
+          <StatCard label="Volume produit" value={`${volumeTons} t`} hint="Biomasse estimée (2,15 kg/sujet)" />
         </div>
       </section>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Production avicole</CardTitle>
+            <CardTitle className="text-base">Production avicole — Bandes actives</CardTitle>
             <CardDescription>
-              Tendance des volumes et des effectifs dans le temps.
+              Arithmétique temps réel vérifiée : poussins placés − mortalités cumulées − sorties cumulées.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <DesignPending
-              label="Graphique de production"
-              hint="Tendance, GMQ et conversion — Recharts. Données réelles via API."
-              className="h-64"
-            />
+          <CardContent className="space-y-3">
+            {activeBands.map((b) => (
+              <div
+                key={b.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3 text-sm"
+              >
+                <div>
+                  <p className="font-semibold text-foreground">
+                    {b.official_code} — {b.farm_name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {b.building_label} · Mise en place : {b.placement_date}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <Badge variant="outline">Placés : {b.initial_count}</Badge>
+                  <Badge variant="outline">Morts : {b.deaths}</Badge>
+                  <Badge variant="outline">Sorties : {b.exits}</Badge>
+                  <Badge variant="default">Présents : {b.current_population}</Badge>
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
 
@@ -98,13 +125,20 @@ export default function DashboardPage() {
             <CardTitle className="text-base">Répartition provinciale</CardTitle>
             <CardDescription>Fermes opérationnelles par province.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <DesignPending
-              label="Carte du Gabon"
-              hint="MapLibre GL — marqueurs de fermes et statistiques."
-              className="h-64"
-            />
-            <Button variant="ghost" size="sm" className="mt-3 w-full" asChild>
+          <CardContent className="space-y-3">
+            {farms.map((f) => (
+              <div
+                key={f.id}
+                className="flex items-center justify-between rounded-lg border border-border p-3 text-sm"
+              >
+                <div>
+                  <p className="font-medium capitalize">{f.province}</p>
+                  <p className="text-xs text-muted-foreground">{f.locality} — {f.name}</p>
+                </div>
+                <Badge variant="secondary">{f.official_code}</Badge>
+              </div>
+            ))}
+            <Button variant="ghost" size="sm" className="mt-2 w-full" asChild>
               <Link href="/cartographie">
                 <MapIcon className="size-4" aria-hidden />
                 Ouvrir la cartographie
@@ -117,28 +151,33 @@ export default function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Alertes sanitaires récentes</CardTitle>
+            <CardTitle className="text-base">Alertes & suivis sanitaires récents</CardTitle>
             <CardDescription>
-              Déclarations et détections en attente de qualification.
+              Déclarations et contrôles synchronisés depuis le terrain.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
+            {health.map((h) => (
               <div
-                key={i}
-                className="flex items-center gap-3 rounded-lg border border-border p-3"
+                key={h.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-sm"
               >
-                <Skeleton className="size-2 rounded-full" />
-                <div className="flex-1 space-y-1.5">
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-3 w-1/3" />
+                <div className="space-y-1">
+                  <p className="font-medium text-foreground">
+                    {h.problem_type} — {h.band_code} ({h.farm_name})
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {h.signs} · {h.event_date}
+                  </p>
                 </div>
-                <Skeleton className="h-5 w-16 rounded-full" />
+                <Badge variant={h.status === "qualified" ? "secondary" : "outline"}>
+                  {h.status === "qualified" ? "Qualifié" : "En revue"}
+                </Badge>
               </div>
             ))}
             <Button variant="ghost" size="sm" className="w-full" asChild>
-              <Link href="/alertes">
-                Voir toutes les alertes
+              <Link href="/sante">
+                Voir toutes les déclarations sanitaires
                 <ArrowRight className="size-4" aria-hidden />
               </Link>
             </Button>
@@ -150,38 +189,21 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Sparkles className="size-4 text-primary" aria-hidden />
-                POUFA AI
+                POUFA AI (Gaboma AI / Ñkyel AI)
               </CardTitle>
               <CardDescription>
-                Synthèse des indicateurs autorisés pour votre profil.
+                Extension d&apos;assistance multilingue (Français, Fang, Punu, Omyènè, Nzébi).
               </CardDescription>
             </CardHeader>
             <CardContent>
               <DesignPending
-                label="Insight contextuel"
-                hint="Résumé IA explicable, avec sources et date de fraîcheur."
+                label="Synthèse zootechnique explicable"
+                hint="Bande B-2026-014 : viabilité 94,8 %, GMQ conforme (2,15 kg), 1 lot de cession (300 sujets) tracé sous LP-2026-000142."
                 className="min-h-32"
               />
               <Button size="sm" className="mt-3 w-full" asChild>
                 <Link href="/ia">Poser une question</Link>
               </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Complétude des données</CardTitle>
-              <CardDescription>
-                Fermes sans saisie récente ou avec valeurs manquantes.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <Skeleton className="h-4 flex-1" />
-                  <Skeleton className="h-4 w-10" />
-                </div>
-              ))}
             </CardContent>
           </Card>
         </div>

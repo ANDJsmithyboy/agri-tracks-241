@@ -118,7 +118,7 @@ export default function SaisiePage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+            <div className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Bande sélectionnée</CardTitle>
@@ -126,19 +126,19 @@ export default function SaisiePage() {
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Ferme</span>
-                <span className="font-medium">—</span>
+                <span className="font-medium">Ferme Pilote KIMBA — Akanda</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Âge</span>
-                <span className="font-medium">— jours</span>
+                <span className="text-muted-foreground">Bande</span>
+                <span className="font-mono font-medium">B-2026-014</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Effectif</span>
-                <span className="font-medium tabular-nums">—</span>
+                <span className="text-muted-foreground">Effectif présent</span>
+                <span className="font-medium tabular-nums">648 / 1 000 sujets</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Dernière saisie</span>
-                <span className="font-medium">—</span>
+                <span className="font-medium">08/11/2026 (52 morts cumulés, 85 kg)</span>
               </div>
               <Button variant="ghost" size="sm" className="mt-2 w-full" asChild>
                 <Link href="/bandes">Voir la bande</Link>

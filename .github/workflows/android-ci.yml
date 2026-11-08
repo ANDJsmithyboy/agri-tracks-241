@@ -2,7 +2,7 @@ name: Android CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "release/**"]
     paths: ["apps/android/**", ".github/workflows/android-ci.yml"]
   pull_request:
     paths: ["apps/android/**"]
@@ -31,13 +31,13 @@ jobs:
           # (l'app compile sans elle ; Clerk.init est skippé si blank).
           POUFA_CLERK_PUBLISHABLE_KEY: ${{ secrets.POUFA_CLERK_PUBLISHABLE_KEY }}
           POUFA_API_BASE_URL: ${{ vars.POUFA_API_BASE_URL }}
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
 
       - name: Unit tests
-        run: ./gradlew testDebugUnitTest --no-daemon
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
 
       - name: Lint
-        run: ./gradlew lintDebug --no-daemon
+        run: ./gradlew :app:lintDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

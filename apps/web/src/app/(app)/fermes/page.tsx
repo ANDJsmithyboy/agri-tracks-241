@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-import { TableSkeleton } from "@/components/table-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,8 +12,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { getFarmsData } from "@/lib/poufa-queries";
 
-export default function FermesPage() {
+export default async function FermesPage() {
+  const farms = await getFarmsData();
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -64,32 +74,57 @@ export default function FermesPage() {
                   <SelectItem value="suspendue">Suspendue</SelectItem>
                 </SelectContent>
               </Select>
-              <Select defaultValue="Toutes les cohortes">
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Toutes les cohortes">
-                    Toutes les cohortes
-                  </SelectItem>
-                  <SelectItem value="c1">Cohorte 1</SelectItem>
-                  <SelectItem value="c2">Cohorte 2</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
               <Badge variant="secondary" className="mr-2">
-                —
+                {farms.length}
               </Badge>
-              fermes
+              ferme(s) autorisée(s)
             </span>
             <span>Tri : nom (A→Z)</span>
           </div>
 
-          <TableSkeleton rows={6} columns={6} />
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Code officiel</TableHead>
+                <TableHead>Exploitation</TableHead>
+                <TableHead>Province / Localité</TableHead>
+                <TableHead>Filière</TableHead>
+                <TableHead>Bande active</TableHead>
+                <TableHead className="text-right">Effectif présent</TableHead>
+                <TableHead>Statut</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {farms.map((f) => (
+                <TableRow key={f.id}>
+                  <TableCell className="font-mono text-xs">{f.official_code}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link href={`/fermes/${f.id}`} className="hover:underline">
+                      {f.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell className="capitalize">
+                    {f.province} · {f.locality}
+                  </TableCell>
+                  <TableCell className="capitalize">{f.farming_type}</TableCell>
+                  <TableCell>{f.active_band_code ?? "—"}</TableCell>
+                  <TableCell className="text-right tabular-nums font-medium">
+                    {f.current_population ?? "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={f.status === "active" ? "default" : "secondary"}>
+                      {f.status === "active" ? "Opérationnelle" : f.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
