@@ -1,4 +1,3 @@
-import psycopg
 from psycopg_pool import ConnectionPool
 
 from .config import settings
@@ -127,8 +126,7 @@ CREATE TABLE IF NOT EXISTS flock_exits (
     lot_id UUID,
     provisional_lot_code TEXT,
     version INT NOT NULL DEFAULT 1,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (band_id, exit_date, exit_type, quantity)
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- Idempotence = op_id côté sync_operations, PAS contrainte métier :
 -- deux cessions légitimes identiques (date/type/qté) doivent être possibles.
@@ -177,6 +175,66 @@ CREATE TABLE IF NOT EXISTS inventory_receipts (
     version INT NOT NULL DEFAULT 1,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS health_declarations (
+    id UUID PRIMARY KEY,
+    farm_id UUID NOT NULL,
+    band_id UUID NOT NULL,
+    problem_type TEXT NOT NULL,
+    signs TEXT,
+    affected_count INT,
+    notes TEXT,
+    event_date DATE NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending_review',
+    created_by TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS health_attachments (
+    id UUID PRIMARY KEY,
+    declaration_id UUID NOT NULL,
+    storage_path TEXT NOT NULL,
+    mime_type TEXT,
+    file_size BIGINT,
+    checksum TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS lots (
+    id UUID PRIMARY KEY,
+    farm_id UUID NOT NULL,
+    band_id UUID NOT NULL,
+    official_code TEXT UNIQUE,
+    provisional_code TEXT,
+    quantity INT NOT NULL,
+    transfer_date DATE NOT NULL,
+    recipient TEXT,
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS farm_contacts (
+    id UUID PRIMARY KEY,
+    farm_id UUID NOT NULL,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    phone TEXT,
+    email TEXT,
+    notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS app_notifications (
+    id UUID PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    farm_id UUID,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    section TEXT NOT NULL DEFAULT 'general',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 """
 

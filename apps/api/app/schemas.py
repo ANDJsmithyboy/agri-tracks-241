@@ -1,8 +1,13 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+
+class HealthOut(BaseModel):
+    ok: bool
+    db: str
 
 
 class SyncOperationIn(BaseModel):
@@ -15,6 +20,14 @@ class SyncOperationIn(BaseModel):
     payload: dict[str, Any]
     client_ts: datetime | None = None
     schema_version: int = 1
+
+    @field_validator("client_ts", mode="before")
+    @classmethod
+    def _parse_client_ts(cls, v: Any) -> datetime | Any:
+        if isinstance(v, (int, float)):
+            ts = v / 1000.0 if v > 1e10 else float(v)
+            return datetime.fromtimestamp(ts, tz=timezone.utc)
+        return v
 
 
 class SyncPushRequest(BaseModel):

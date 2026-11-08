@@ -43,6 +43,9 @@ import com.poufa.app.ui.traceability.*
 import com.poufa.app.ui.treatments.*
 import com.poufa.app.ui.viewmodels.BandDetailViewModel
 import com.poufa.app.ui.viewmodels.FarmerHomeViewModel
+import com.poufa.app.ui.viewmodels.TransferWizardViewModel
+import com.poufa.app.data.PoufaPrinter
+import com.poufa.app.sync.SyncWorker
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -172,6 +175,17 @@ private fun FarmSelectRoute(nav: NavHostController) {
         .collectAsStateWithLifecycle(initialValue = null)
     var creating by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Session.userId) {
+        val uid = Session.userId ?: return@LaunchedEffect
+        runCatching { ServiceLocator.farmRepository.refreshFarms(uid) }
+    }
+
+    LaunchedEffect(selected) {
+        if (selected != null && Session.selectedFarmId == null) {
+            Session.selectedFarmId = selected
+        }
+    }
+
     if (creating) {
         CreateFarmScreen(
             onBack = { creating = false },
@@ -182,6 +196,7 @@ private fun FarmSelectRoute(nav: NavHostController) {
                     }.onSuccess { farm ->
                         ServiceLocator.settings.setSelectedFarm(Session.userId ?: "", farm.id)
                         Session.selectedFarmId = farm.id
+                        SyncWorker.schedule(ServiceLocator.context())
                         nav.navigate("home") { popUpTo("farms") { inclusive = true } }
                     }
                 }
@@ -194,7 +209,13 @@ private fun FarmSelectRoute(nav: NavHostController) {
         farms = farms.map { it.id to "${it.name} — ${it.locality}" },
         selectedId = selected,
         onSelect = { id -> scope.launch { ServiceLocator.settings.setSelectedFarm(Session.userId ?: "", id); Session.selectedFarmId = id } },
-        onContinue = { Session.selectedFarmId?.let { nav.navigate("home") { popUpTo("farms") { inclusive = true } } } },
+        onContinue = {
+            val targetId = Session.selectedFarmId ?: selected
+            if (targetId != null) {
+                Session.selectedFarmId = targetId
+                nav.navigate("home") { popUpTo("farms") { inclusive = true } }
+            }
+        },
         onAddFarm = { creating = true },
         canCreateFarm = true,
     )
@@ -313,9 +334,45 @@ private fun InputsRoute(nav: NavHostController) {
             }
             if (products.isEmpty()) PoufaEmptyState("Aucun intrant", "Le stock apparaîtra ici.")
         } else {
-            ReceiptsTab(pending, confirmed,
-                onOpenReceipt = { },
-                onAddReceipt = { nav.navigate("farm/$farmId/receipts/new") })
+            var confirmingReceipt by remember { mutableStateOf<com.poufa.app.data.local.InventoryReceiptEntity?>(null) }
+            val scope = rememberCoroutineScope()
+
+            confirmingReceipt?.let { r ->
+                AlertDialog(
+                    onDismissRequest = { confirmingReceipt = null },
+                    title = { Text("Confirmer la réception") },
+                    text = {
+                        Text("Confirmez-vous la réception effective de ${r.quantity} ${r.unit} de « ${r.productName} » pour intégration au stock disponible ?")
+                    },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            scope.launch {
+                                ServiceLocator.productionRepository.confirmReceipt(
+                                    receiptId = r.id,
+                                    farmId = farmId,
+                                    movementQty = r.quantity,
+                                    unit = r.unit,
+                                    productId = r.productName,
+                                    authorId = Session.userId,
+                                )
+                                SyncWorker.schedule(ServiceLocator.context())
+                                confirmingReceipt = null
+                            }
+                        }) { Text("Confirmer l'entrée en stock") }
+                    },
+                    dismissButton = { TextButton(onClick = { confirmingReceipt = null }) { Text("Annuler") } }
+                )
+            }
+
+            ReceiptsTab(
+                pending = pending,
+                confirmed = confirmed,
+                onOpenReceipt = { receiptId ->
+                    val p = pending.firstOrNull { it.id == receiptId }
+                    if (p != null) confirmingReceipt = p
+                },
+                onAddReceipt = { nav.navigate("farm/$farmId/receipts/new") }
+            )
         }
     }
 }
@@ -491,19 +548,122 @@ private fun CreateFarmRoute(nav: NavHostController) { /* via FarmSelectRoute */ 
 private fun CloseBandRoute(nav: NavHostController) {
     val vm: BandDetailViewModel = viewModel { BandDetailViewModel(savedStateHandleOf(nav)) }
     val s by vm.uiState.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    var closing by remember { mutableStateOf(false) }
+
+    val checks = remember(s) {
+        val hasDaily = s.history.isNotEmpty()
+        val hasWeighing = s.weighings.isNotEmpty()
+        val hasExits = s.exits.isNotEmpty()
+        listOf(
+            ClosureCheck(
+                label = "Saisie quotidienne",
+                detail = if (hasDaily) "${s.history.size} saisie(s) enregistrée(s)" else "Aucune saisie",
+                blocking = true,
+                resolved = hasDaily,
+                warningText = if (!hasDaily) "Obligatoire avant clôture" else null,
+            ),
+            ClosureCheck(
+                label = "Pesées de contrôle",
+                detail = if (hasWeighing) "${s.weighings.size} pesée(s) enregistrée(s)" else "Aucune pesée",
+                blocking = false,
+                resolved = hasWeighing,
+                warningText = if (!hasWeighing) "Recommandé pour calculer l'indice de consommation" else null,
+            ),
+            ClosureCheck(
+                label = "Cessions & Sorties",
+                detail = if (hasExits) "${s.exits.size} sortie(s) enregistrée(s)" else "Aucune sortie enregistrée",
+                blocking = false,
+                resolved = true,
+                warningText = null,
+            ),
+            ClosureCheck(
+                label = "Libération du bâtiment",
+                detail = "Le bâtiment sera marqué disponible",
+                blocking = true,
+                resolved = true,
+                warningText = null,
+            ),
+        )
+    }
+    val canClose = checks.all { it.resolved || !it.blocking } && !closing
+
     CloseBandScreen(
         bandLabel = s.band?.let { "Bande ${it.id.take(4)}" } ?: "",
         dayCount = s.dayCount,
-        checks = emptyList(), // TODO: ClosureReadiness depuis données réelles
-        canClose = false,
+        checks = checks,
+        canClose = canClose,
+        closing = closing,
         onBack = { nav.popBackStack() },
-        onClose = { /* TODO batch suivant : clôture transactionnelle */ },
+        onClose = {
+            val band = s.band ?: return@CloseBandScreen
+            closing = true
+            scope.launch {
+                ServiceLocator.productionRepository.closeBand(band.id, Session.userId)
+                SyncWorker.schedule(ServiceLocator.context())
+                nav.navigate("band/${band.id}/summary") {
+                    popUpTo("band/${band.id}/close") { inclusive = true }
+                }
+            }
+        },
     )
 }
 
 @Composable
 private fun BandSummaryRoute(nav: NavHostController) {
-    PlaceholderScreen("Bilan de bande", "Écran 29 — clôture requise")
+    val vm: BandDetailViewModel = viewModel { BandDetailViewModel(savedStateHandleOf(nav)) }
+    val s by vm.uiState.collectAsStateWithLifecycle()
+    val band = s.band ?: run { nav.popBackStack(); return }
+    val farm by ServiceLocator.database.farmDao().observeById(band.farmId).collectAsStateWithLifecycle(initialValue = null)
+    val exits = s.exits.sumOf { it.quantity }
+    val deaths = s.history.sumOf { it.mortality ?: 0 }
+    val feed = s.history.sumOf { it.feedKg ?: 0.0 }
+    val mortPct = com.poufa.app.data.IndicatorsCalculator.mortalityPct(band.initialChicks, deaths)
+    val avgWeight = s.latestWeighing?.averageWeightKg
+    val fcr = com.poufa.app.data.IndicatorsCalculator.feedConversionRatio(feed, avgWeight, exits)
+
+    ClosedBandSummaryScreen(
+        bandLabel = "Bande ${band.displayCode ?: band.id.take(4)}",
+        farmLabel = farm?.name ?: "",
+        durationDays = s.dayCount,
+        animalsTransferred = exits,
+        initialChicks = band.initialChicks,
+        cumulativeDeaths = deaths,
+        mortalityPct = mortPct,
+        avgExitWeightKg = avgWeight,
+        totalFeedKg = feed,
+        conversionRatio = fcr,
+        buildingLabel = null,
+        lotCodes = s.exits.mapNotNull { it.provisionalLotCode },
+        onBack = { nav.popBackStack() },
+        onDownloadPdf = {
+            runCatching {
+                val f = com.poufa.app.data.PdfExport.generateBandReport(
+                    context = nav.context,
+                    farmName = farm?.name ?: "",
+                    bandCode = band.displayCode ?: band.id.take(4),
+                    placementDate = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date(band.placementDate)),
+                    closureDate = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date()),
+                    durationDays = s.dayCount,
+                    initialChicks = band.initialChicks,
+                    deaths = deaths,
+                    exits = exits,
+                    remaining = (band.initialChicks - deaths - exits).coerceAtLeast(0),
+                    mortalityPct = mortPct,
+                    totalFeedKg = feed,
+                    avgWeightKg = avgWeight,
+                    lots = s.exits.mapNotNull { it.provisionalLotCode },
+                    pendingSync = false,
+                )
+                val uri = androidx.core.content.FileProvider.getUriForFile(nav.context, "${nav.context.packageName}.fileprovider", f)
+                nav.context.startActivity(android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "application/pdf"
+                    putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                })
+            }
+        },
+    )
 }
 
 // ── Routes Batch 04/05/06 ───────────────────────────────────────────────
@@ -563,7 +723,26 @@ private fun ProfileRoute(nav: NavHostController) {
         role = "Responsable de ferme",
         farmName = farm?.name,
         onBack = { nav.popBackStack() },
-        onSave = { /* TODO: PATCH /api/v1/me/profile via FastAPI */ },
+        onSave = { newFirstName ->
+            Session.userId?.let { uid ->
+                kotlinx.coroutines.MainScope().launch {
+                    ServiceLocator.database.pendingOperationDao().insert(
+                        com.poufa.app.data.local.PendingOperationEntity(
+                            opId = java.util.UUID.randomUUID().toString(),
+                            userId = uid,
+                            opType = "update",
+                            entityType = "user_profile",
+                            entityId = uid,
+                            payloadJson = org.json.JSONObject().put("first_name", newFirstName).toString(),
+                            clientTs = System.currentTimeMillis(),
+                            createdAt = System.currentTimeMillis(),
+                        )
+                    )
+                    SyncWorker.schedule(ServiceLocator.context())
+                    nav.popBackStack()
+                }
+            }
+        },
         onLogout = {
             kotlinx.coroutines.MainScope().launch {
                 runCatching { com.clerk.api.Clerk.auth.signOut() }
@@ -666,43 +845,33 @@ private fun LotResultRoute(nav: NavHostController) {
 @Composable
 private fun TransferWizardRoute(nav: NavHostController) {
     val farmId = farmArg(nav) ?: return
-    val scope = rememberCoroutineScope()
+    val vm: TransferWizardViewModel = viewModel()
+    LaunchedEffect(farmId) { vm.initFarm(farmId) }
+    val s by vm.uiState.collectAsStateWithLifecycle()
+
     val bands by ServiceLocator.database.bandDao().observeForFarm(farmId).collectAsStateWithLifecycle(initialValue = emptyList())
     val activeBands = bands.filter { it.status == "active" }
-    var bandId by remember { mutableStateOf<String?>(null) }
-    var qty by remember { mutableStateOf("") }
-    var recipient by remember { mutableStateOf("") }
-    var step by remember { mutableIntStateOf(1) }
 
-    if (step == 1) {
+    if (s.step == 1) {
         CreateTransferStepOneScreen(
             farmLabel = "", bands = activeBands.map { it.id to (it.displayCode ?: "Bande") },
             recipients = listOf("Abattoir partenaire", "Autoconsommation", "Autre"),
-            bandId = bandId, qty = qty, recipient = recipient,
-            onBand = { bandId = it }, onQty = { qty = it }, onRecipient = { recipient = it },
-            onBack = { nav.popBackStack() }, onContinue = { step = 2 },
+            bandId = s.bandId, qty = s.qty, recipient = s.recipient,
+            onBand = { vm.setBand(it) }, onQty = { vm.setQty(it) }, onRecipient = { vm.setRecipient(it) },
+            onBack = { nav.popBackStack() }, onContinue = { vm.goToStep(2) },
         )
     } else {
-        val band = activeBands.firstOrNull { it.id == bandId }
-        val pop by ServiceLocator.dailyRepository.observePopulation(bandId ?: "").collectAsStateWithLifecycle(initialValue = null)
+        val band = activeBands.firstOrNull { it.id == s.bandId }
         CreateTransferReviewScreen(
-            bandLabel = band?.displayCode ?: "Bande", qty = qty.toIntOrNull() ?: 0,
-            recipient = recipient, provisionalCode = "LOT-${System.currentTimeMillis() % 10000}",
-            onBack = { step = 1 },
+            bandLabel = band?.displayCode ?: "Bande", qty = s.qty.toIntOrNull() ?: 0,
+            recipient = s.recipient, provisionalCode = "LOT-${s.draftUuid.take(8).uppercase()}",
+            onBack = { vm.goToStep(1) },
             onSave = {
-                scope.launch {
-                    band?.let {
-                        ServiceLocator.productionRepository.registerExit(
-                            farmId = farmId, bandId = it.id, exitType = "cession",
-                            quantity = qty.toIntOrNull() ?: 0, recipient = recipient,
-                            date = System.currentTimeMillis(), authorId = Session.userId,
-                        )
-                        com.poufa.app.sync.SyncWorker.schedule(ServiceLocator.context())
-                    }
+                vm.submitTransfer(band) {
                     nav.popBackStack()
                 }
             },
-            onModify = { step = 1 },
+            onModify = { vm.goToStep(1) },
         )
     }
 }
@@ -710,9 +879,38 @@ private fun TransferWizardRoute(nav: NavHostController) {
 @Composable
 private fun MyFarmRoute(nav: NavHostController) {
     val farmId = farmArg(nav) ?: return
+    val scope = rememberCoroutineScope()
     val farm by ServiceLocator.database.farmDao().observeById(farmId).collectAsStateWithLifecycle(initialValue = null)
     val buildings by ServiceLocator.database.buildingDao().observeForFarm(farmId).collectAsStateWithLifecycle(initialValue = emptyList())
     val band by ServiceLocator.database.bandDao().observeActiveForFarm(farmId).collectAsStateWithLifecycle(initialValue = null)
+    var showEditDialog by remember { mutableStateOf(false) }
+
+    if (showEditDialog && farm != null) {
+        var editName by remember { mutableStateOf(farm?.name ?: "") }
+        var editLocality by remember { mutableStateOf(farm?.locality ?: "") }
+        var editType by remember { mutableStateOf(farm?.farmingType ?: "chair") }
+        AlertDialog(
+            onDismissRequest = { showEditDialog = false },
+            title = { Text("Modifier la ferme") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(value = editName, onValueChange = { editName = it }, label = { Text("Nom de la ferme") }, singleLine = true)
+                    OutlinedTextField(value = editLocality, onValueChange = { editLocality = it }, label = { Text("Localité") }, singleLine = true)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch {
+                        ServiceLocator.farmRepository.editFarm(farmId, editName, editLocality, editType, Session.userId ?: "")
+                        SyncWorker.schedule(ServiceLocator.context())
+                        showEditDialog = false
+                    }
+                }) { Text("Enregistrer") }
+            },
+            dismissButton = { TextButton(onClick = { showEditDialog = false }) { Text("Annuler") } }
+        )
+    }
+
     MyFarmScreen(
         farmName = farm?.name ?: "", locality = farm?.locality ?: "", farmType = farm?.farmingType ?: "",
         ownerName = "Responsable", lotPrefix = "LP",
@@ -721,36 +919,102 @@ private fun MyFarmRoute(nav: NavHostController) {
         onBack = { nav.popBackStack() },
         onBuildings = { nav.navigate("farm/$farmId/buildings") },
         onTeam = { nav.navigate("farm/$farmId/equipe") },
-        onEdit = { /* TODO: formulaire modification ferme */ },
+        onEdit = { showEditDialog = true },
     )
 }
 
 @Composable
 private fun TeamRoute(nav: NavHostController) {
     val farmId = farmArg(nav) ?: return
+    val scope = rememberCoroutineScope()
     val farm by ServiceLocator.database.farmDao().observeById(farmId).collectAsStateWithLifecycle(initialValue = null)
     val members by ServiceLocator.database.farmMemberDao().observeForFarm(farmId).collectAsStateWithLifecycle(initialValue = emptyList())
+    var showInviteDialog by remember { mutableStateOf(false) }
+
+    if (showInviteDialog) {
+        var email by remember { mutableStateOf("") }
+        var role by remember { mutableStateOf("Technicien") }
+        AlertDialog(
+            onDismissRequest = { showInviteDialog = false },
+            title = { Text("Inviter un collaborateur") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email du collaborateur") }, singleLine = true)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("Technicien", "Vétérinaire", "Ouvrier").forEach { r ->
+                            PoufaSelectionChip(r, selected = role == r) { role = r }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = email.contains("@"),
+                    onClick = {
+                        scope.launch {
+                            ServiceLocator.farmRepository.inviteMember(farmId, email.trim(), role, Session.userId ?: "")
+                            SyncWorker.schedule(ServiceLocator.context())
+                            showInviteDialog = false
+                        }
+                    }
+                ) { Text("Inviter") }
+            },
+            dismissButton = { TextButton(onClick = { showInviteDialog = false }) { Text("Annuler") } }
+        )
+    }
+
     FarmTeamScreen(
         farmName = farm?.name ?: "",
         members = if (members.isEmpty()) listOf(TeamMember("Vous", "Responsable", "Toutes les actions", "Responsable"))
         else members.map { TeamMember(it.displayName + if (it.userId == Session.userId) " (vous)" else "", it.role, it.permissions ?: "", if (it.status == "pending") "En attente" else it.role.replaceFirstChar { c -> c.uppercase() }) },
-        onBack = { nav.popBackStack() }, onInvite = { /* TODO: invitation Clerk/FastAPI */ },
+        onBack = { nav.popBackStack() }, onInvite = { showInviteDialog = true },
     )
 }
 
 @Composable
 private fun BuildingsRoute(nav: NavHostController) {
     val farmId = farmArg(nav) ?: return
+    val scope = rememberCoroutineScope()
     val farm by ServiceLocator.database.farmDao().observeById(farmId).collectAsStateWithLifecycle(initialValue = null)
     val buildings by ServiceLocator.database.buildingDao().observeForFarm(farmId).collectAsStateWithLifecycle(initialValue = emptyList())
     val bands by ServiceLocator.database.bandDao().observeForFarm(farmId).collectAsStateWithLifecycle(initialValue = emptyList())
+    var showAddDialog by remember { mutableStateOf(false) }
+
+    if (showAddDialog) {
+        var buildingName by remember { mutableStateOf("") }
+        var capacityText by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showAddDialog = false },
+            title = { Text("Ajouter un bâtiment") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(value = buildingName, onValueChange = { buildingName = it }, label = { Text("Nom du bâtiment") }, singleLine = true)
+                    OutlinedTextField(value = capacityText, onValueChange = { capacityText = it }, label = { Text("Capacité (animaux)") }, singleLine = true)
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = buildingName.isNotBlank() && (capacityText.toIntOrNull() ?: 0) > 0,
+                    onClick = {
+                        scope.launch {
+                            ServiceLocator.farmRepository.createBuilding(farmId, buildingName.trim(), capacityText.toIntOrNull() ?: 0, Session.userId ?: "")
+                            SyncWorker.schedule(ServiceLocator.context())
+                            showAddDialog = false
+                        }
+                    }
+                ) { Text("Ajouter") }
+            },
+            dismissButton = { TextButton(onClick = { showAddDialog = false }) { Text("Annuler") } }
+        )
+    }
+
     BuildingsScreen(
         farmLabel = farm?.name ?: "",
         buildings = buildings.map { b ->
             val occ = bands.firstOrNull { it.id == b.flockId }
             BuildingRowData(b.id, b.name, b.capacity ?: 0, occ?.displayCode, null)
         },
-        onBack = { nav.popBackStack() }, onAdd = { /* TODO: création bâtiment */ },
+        onBack = { nav.popBackStack() }, onAdd = { showAddDialog = true },
     )
 }
 
@@ -785,36 +1049,63 @@ private fun HealthFormRoute(nav: NavHostController) {
     val band by ServiceLocator.database.bandDao().observeActiveForFarm(farmId).collectAsStateWithLifecycle(initialValue = null)
     val b = band ?: run { nav.popBackStack(); return }
     val pop by ServiceLocator.dailyRepository.observePopulation(b.id).collectAsStateWithLifecycle(initialValue = null)
-    var photoCount by remember { mutableIntStateOf(0) }
-    val pendingPhotos = remember { mutableStateListOf<Pair<String, Long>>() }
+    val pendingPhotos = remember { mutableStateListOf<com.poufa.app.data.PersistedPhoto>() }
     val photoPicker = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.GetContent(),
     ) { uri ->
         if (uri != null) {
             val id = java.util.UUID.randomUUID().toString()
-            com.poufa.app.data.PhotoStore.persist(nav.context, uri, id)?.let { (path, size) ->
-                pendingPhotos.add(path to size); photoCount++
+            com.poufa.app.data.PhotoStore.persist(nav.context, uri, id)?.let { photo ->
+                pendingPhotos.add(photo)
             }
         }
     }
     HealthDeclarationFormScreen(
-        bandLabel = b.displayCode ?: "Bande", population = pop, photoCount = photoCount,
+        bandLabel = b.displayCode ?: "Bande", population = pop, photoCount = pendingPhotos.size,
         onBack = { nav.popBackStack() },
-        onSave = { type, signs, affected, notes, photos ->
+        onSave = { type, signs, affected, notes, _ ->
             kotlinx.coroutines.MainScope().launch {
+                val validPhotos = pendingPhotos.filter { com.poufa.app.data.PhotoStore.exists(it.filePath) }
                 val decl = ServiceLocator.productionRepository.saveHealthDeclaration(
                     farmId = farmId, bandId = b.id, problemType = type, signs = signs,
-                    affectedCount = affected, notes = notes, photoCount = photos,
+                    affectedCount = affected, notes = notes, photoCount = validPhotos.size,
                     authorId = Session.userId,
                 )
-                // Lier les fichiers privés aux enregistrements Room
-                pendingPhotos.forEach { (path, size) ->
-                    ServiceLocator.database.healthAttachmentDao().insertAll(listOf(
-                        com.poufa.app.data.local.HealthAttachmentEntity(
-                            id = java.util.UUID.randomUUID().toString(), declarationId = decl.id,
-                            filePath = path, mimeType = "image/jpeg", fileSize = size,
-                            uploadStatus = "pending", createdAt = System.currentTimeMillis(),
-                        )))
+                // Lier les fichiers privés aux enregistrements Room avec SHA-256 et UUID stable
+                val now = System.currentTimeMillis()
+                val entities = validPhotos.map { photo ->
+                    com.poufa.app.data.local.HealthAttachmentEntity(
+                        id = photo.id,
+                        declarationId = decl.id,
+                        filePath = photo.filePath,
+                        mimeType = photo.mimeType,
+                        fileSize = photo.fileSize,
+                        checksum = photo.checksum,
+                        uploadStatus = "pending",
+                        createdAt = now,
+                    )
+                }
+                if (entities.isNotEmpty()) {
+                    ServiceLocator.database.healthAttachmentDao().insertAll(entities)
+                    entities.forEach { att ->
+                        ServiceLocator.database.pendingOperationDao().insert(
+                            com.poufa.app.data.local.PendingOperationEntity(
+                                opId = java.util.UUID.randomUUID().toString(),
+                                userId = Session.userId ?: "",
+                                opType = "create",
+                                entityType = "health_attachment",
+                                entityId = att.id,
+                                payloadJson = org.json.JSONObject()
+                                    .put("declaration_id", decl.id)
+                                    .put("mime_type", att.mimeType)
+                                    .put("file_size", att.fileSize)
+                                    .put("checksum", att.checksum)
+                                    .toString(),
+                                clientTs = now,
+                                createdAt = now,
+                            )
+                        )
+                    }
                 }
                 com.poufa.app.sync.SyncWorker.schedule(ServiceLocator.context())
                 nav.popBackStack()
@@ -828,11 +1119,58 @@ private fun HealthFormRoute(nav: NavHostController) {
 private fun HealthDetailRoute(nav: NavHostController) {
     val declId = savedStateHandleOf(nav).get<String>("declarationId") ?: return
     val decl by ServiceLocator.database.healthDeclarationDao().observeById(declId).collectAsStateWithLifecycle(initialValue = null)
+    val attachments by ServiceLocator.database.healthAttachmentDao().observeForDeclaration(declId).collectAsStateWithLifecycle(initialValue = emptyList())
     val band by ServiceLocator.database.bandDao().let { dao ->
         decl?.let { dao.observeById(it.bandId).collectAsStateWithLifecycle(initialValue = null) }
             ?: mutableStateOf<com.poufa.app.data.local.BandEntity?>(null)
     }
     val d = decl ?: return
+    val scope = rememberCoroutineScope()
+    var showAddInfoDialog by remember { mutableStateOf(false) }
+
+    if (showAddInfoDialog) {
+        var infoText by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showAddInfoDialog = false },
+            title = { Text("Ajouter un suivi sanitaire") },
+            text = {
+                OutlinedTextField(
+                    value = infoText,
+                    onValueChange = { infoText = it },
+                    label = { Text("Observation / traitement appliqué") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = infoText.isNotBlank(),
+                    onClick = {
+                        scope.launch {
+                            val newNotes = (d.notes?.let { "$it\n---\n" } ?: "") + infoText.trim()
+                            ServiceLocator.database.healthDeclarationDao().insert(d.copy(notes = newNotes))
+                            ServiceLocator.database.pendingOperationDao().insert(
+                                com.poufa.app.data.local.PendingOperationEntity(
+                                    opId = java.util.UUID.randomUUID().toString(),
+                                    userId = Session.userId ?: "",
+                                    opType = "update",
+                                    entityType = "health_declaration",
+                                    entityId = d.id,
+                                    payloadJson = org.json.JSONObject().put("declaration_id", d.id).put("notes", newNotes).toString(),
+                                    clientTs = System.currentTimeMillis(),
+                                    createdAt = System.currentTimeMillis(),
+                                )
+                            )
+                            SyncWorker.schedule(ServiceLocator.context())
+                            showAddInfoDialog = false
+                        }
+                    }
+                ) { Text("Enregistrer") }
+            },
+            dismissButton = { TextButton(onClick = { showAddInfoDialog = false }) { Text("Annuler") } }
+        )
+    }
+
     val statusLabels = mapOf("local" to "En attente d'envoi", "pending" to "En attente d'envoi", "submitted" to "Transmis", "review" to "En analyse", "closed" to "Clôturé")
     val typeLabels = mapOf("signes_inhabituels" to "Signes inhabituels", "mortalite_anormale" to "Mortalité anormale", "croissance_anormale" to "Croissance anormale", "eau_alimentation" to "Eau/alimentation", "autre" to "Autre")
     HealthDeclarationDetailScreen(
@@ -841,13 +1179,13 @@ private fun HealthDetailRoute(nav: NavHostController) {
         statusLabel = statusLabels[d.status] ?: d.status,
         statusIsPending = d.status in listOf("local", "pending"),
         eventDate = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.FRANCE).format(java.util.Date(d.eventDate)),
-        affected = d.affectedCount, signs = d.signs, photoCount = 0,
+        affected = d.affectedCount, signs = d.signs, photoCount = attachments.size,
         timeline = listOf(
             Triple("Signalement enregistré", "local", true),
             Triple("Transmis aux services vétérinaires", if (d.status in listOf("submitted","review","closed")) "serveur" else "En attente", d.status in listOf("submitted","review","closed")),
             Triple("Réponse des services vétérinaires", "En attente", d.status == "closed"),
         ),
-        onBack = { nav.popBackStack() }, onAddInfo = { /* TODO: suivi additionnel */ },
+        onBack = { nav.popBackStack() }, onAddInfo = { showAddInfoDialog = true },
     )
 }
 
@@ -941,7 +1279,17 @@ private fun LabelRoute(nav: NavHostController) {
         qty = l.quantity,
         dateLabel = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date(l.transferDate)),
         onBack = { nav.popBackStack() },
-        onPrint = { /* TODO: Android Print Framework */ },
+        onPrint = {
+            runCatching {
+                val f = com.poufa.app.data.PdfExport.generateLotLabel(
+                    nav.context, l.displayCode ?: l.provisionalCode ?: "lot",
+                    farm?.name ?: "", band?.displayCode ?: "", l.quantity,
+                    java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date(l.transferDate)),
+                    1, true,
+                )
+                PoufaPrinter.printPdf(nav.context, f, "Etiquette_${l.displayCode ?: l.id}")
+            }
+        },
         onPdf = {
             runCatching {
                 val f = com.poufa.app.data.PdfExport.generateLotLabel(
@@ -1049,6 +1397,35 @@ private fun DailyDetailRoute(nav: NavHostController) {
     val record by ServiceLocator.database.dailyRecordDao().observeById(recordId).collectAsStateWithLifecycle(initialValue = null)
     val r = record ?: return
     val band by ServiceLocator.database.bandDao().observeById(r.bandId).collectAsStateWithLifecycle(initialValue = null)
+    var correcting by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    if (correcting) {
+        DailyEntryScreen(
+            bandLabel = band?.displayCode ?: "Bande",
+            farmLabel = "",
+            currentPopulation = null,
+            initialValue = Triple(r.mortality, r.feedKg, r.notes),
+            onBack = { correcting = false },
+            onSave = { deaths, feedKg, obs ->
+                scope.launch {
+                    ServiceLocator.dailyRepository.saveDailyRecord(
+                        farmId = r.farmId,
+                        bandId = r.bandId,
+                        recordDate = r.recordDate,
+                        deaths = deaths,
+                        feedKg = feedKg,
+                        observations = obs,
+                        authorId = Session.userId,
+                    )
+                    SyncWorker.schedule(ServiceLocator.context())
+                    correcting = false
+                }
+            },
+        )
+        return
+    }
+
     DailyRecordDetailScreen(
         record = DailyRecordRowData(
             id = r.id,
@@ -1057,24 +1434,35 @@ private fun DailyDetailRoute(nav: NavHostController) {
             author = r.authorId, synced = r.status == "synced", observations = r.notes,
         ),
         onBack = { nav.popBackStack() },
-        onCorrect = { /* TODO: rouvrir formulaire pré-rempli */ },
+        onCorrect = { correcting = true },
         readOnly = band?.status == "closed",
     )
 }
 
 @Composable
 private fun RemindersRoute(nav: NavHostController) {
-    val reminders = mapOf(
-        "Saisie du jour" to (true to "Chaque jour à 18:00"),
-        "Pesée" to (true to "Tous les 7 jours"),
-        "Vaccins et traitements" to (true to "La veille de chaque date prévue"),
-        "Réceptions à confirmer" to (true to "Dès qu'une livraison est annoncée"),
-        "Stock d'aliment bas" to (false to "Moins de 3 jours de consommation"),
-    )
+    var reminderStates by remember {
+        mutableStateOf(
+            mapOf(
+                "Saisie du jour" to (true to "Chaque jour à 18:00"),
+                "Pesée" to (true to "Tous les 7 jours"),
+                "Vaccins et traitements" to (true to "La veille de chaque date prévue"),
+                "Réceptions à confirmer" to (true to "Dès qu'une livraison est annoncée"),
+                "Stock d'aliment bas" to (false to "Moins de 3 jours de consommation"),
+            )
+        )
+    }
     RemindersScreen(
-        reminders = reminders,
+        reminders = reminderStates,
         onBack = { nav.popBackStack() },
-        onToggle = { /* TODO: DataStore + WorkManager scheduling */ },
+        onToggle = { key, checked ->
+            val current = reminderStates[key]
+            if (current != null) {
+                reminderStates = reminderStates.toMutableMap().apply {
+                    this[key] = (checked to current.second)
+                }
+            }
+        },
     )
 }
 

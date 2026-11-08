@@ -56,8 +56,8 @@ class ProductionRepository(private val db: PoufaDatabase) {
         )
         db.weighingDao().upsert(w)
         db.pendingOperationDao().insert(outbox("weighing", w.id, authorId) {
-            put("band_id", bandId).put("date", date).put("sample_count", sampleCount)
-                .put("total_weight_kg", totalWeightKg)
+            put("farm_id", farmId).put("band_id", bandId).put("date", date)
+                .put("sample_count", sampleCount).put("total_weight_kg", totalWeightKg)
         })
         return w
     }
@@ -86,8 +86,9 @@ class ProductionRepository(private val db: PoufaDatabase) {
         )
         db.flockExitDao().insert(exit)
         db.pendingOperationDao().insert(outbox("flock_exit", exit.id, authorId) {
-            put("band_id", bandId).put("type", exitType).put("quantity", quantity)
-                .put("recipient", recipient).put("date", date).put("lot_id", exit.lotId)
+            put("farm_id", farmId).put("band_id", bandId).put("type", exitType)
+                .put("quantity", quantity).put("recipient", recipient).put("date", date)
+                .put("lot_id", exit.lotId).put("provisional_lot_code", exit.provisionalLotCode)
         })
         return exit
     }
@@ -108,7 +109,8 @@ class ProductionRepository(private val db: PoufaDatabase) {
         )
         db.treatmentDao().insert(t)
         db.pendingOperationDao().insert(outbox("treatment", t.id, authorId) {
-            put("band_id", bandId).put("type", type).put("product", productName)
+            put("farm_id", farmId).put("band_id", bandId).put("type", type)
+                .put("product", productName).put("batch", batch)
                 .put("method", method).put("animals", animalsTreated).put("date", date)
         })
         return t
@@ -135,7 +137,8 @@ class ProductionRepository(private val db: PoufaDatabase) {
         )
         db.receiptDao().confirm(receiptId, movementId)
         db.pendingOperationDao().insert(outbox("receipt_confirm", receiptId, authorId) {
-            put("movement_id", movementId).put("quantity", movementQty).put("unit", unit)
+            put("farm_id", farmId).put("movement_id", movementId)
+                .put("product_id", productId ?: receiptId).put("quantity", movementQty).put("unit", unit)
         })
     }
 
@@ -153,7 +156,8 @@ class ProductionRepository(private val db: PoufaDatabase) {
         )
         db.inventoryDao().insertMovement(m)
         db.pendingOperationDao().insert(outbox("inventory_usage", m.id, authorId) {
-            put("product_id", productId).put("quantity", quantity).put("unit", unit).put("date", date)
+            put("farm_id", farmId).put("product_id", productId).put("band_id", bandId)
+                .put("quantity", quantity).put("unit", unit).put("date", date)
         })
         return m
     }
@@ -172,7 +176,8 @@ class ProductionRepository(private val db: PoufaDatabase) {
         )
         db.receiptDao().insert(r)
         db.pendingOperationDao().insert(outbox("receipt_create", r.id, authorId) {
-            put("product", productName).put("quantity", quantity).put("unit", unit).put("date", date)
+            put("farm_id", farmId).put("product", productName).put("quantity", quantity)
+                .put("unit", unit).put("delivery_ref", supplier).put("date", date)
         })
         return r
     }
@@ -191,9 +196,9 @@ class ProductionRepository(private val db: PoufaDatabase) {
         )
         db.healthDeclarationDao().insert(d)
         db.pendingOperationDao().insert(outbox("health_declaration", d.id, authorId) {
-            put("band_id", bandId).put("type", problemType)
+            put("farm_id", farmId).put("band_id", bandId).put("type", problemType)
                 .put("signs", signs.joinToString(",")).put("count", affectedCount)
-                .put("photos", photoCount)
+                .put("notes", notes).put("date", d.eventDate).put("photos", photoCount)
         })
         return d
     }
@@ -227,6 +232,21 @@ class ProductionRepository(private val db: PoufaDatabase) {
                 .put("chicks", chicks).put("strain", strainLabel).put("date", band.placementDate)
         })
         return band
+    }
+
+    @androidx.room.Transaction
+    suspend fun closeBand(bandId: String, authorId: String?) {
+        val band = db.bandDao().observeById(bandId).first() ?: return
+        db.bandDao().upsertAll(listOf(band.copy(status = "closed")))
+        band.buildingId?.let { bid ->
+            val building = db.buildingDao().observeForFarm(band.farmId).first().firstOrNull { it.id == bid }
+            if (building != null) {
+                db.buildingDao().upsertAll(listOf(building.copy(status = "available", flockId = null)))
+            }
+        }
+        db.pendingOperationDao().insert(outbox("band_closure", bandId, authorId) {
+            put("band_id", bandId).put("closed_at", System.currentTimeMillis())
+        })
     }
 
     private fun outbox(

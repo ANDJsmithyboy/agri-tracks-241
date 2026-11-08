@@ -76,7 +76,7 @@ class DailyRepository(
             entityType = "daily_record",
             entityId = record.id,
             payloadJson = JSONObject()
-                .put("band_id", bandId).put("record_date", recordDate)
+                .put("farm_id", farmId).put("band_id", bandId).put("record_date", recordDate)
                 .put("deaths", deaths).put("feed_kg", feedKg)
                 .put("observations", observations).toString(),
             clientTs = System.currentTimeMillis(),

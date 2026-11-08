@@ -9,6 +9,10 @@ out/
 .env
 .env.local
 .env.*.local
+**/env.download
+env.download
+**/local.properties
+local.properties
 
 # Builds & caches
 *.tsbuildinfo
@@ -24,3 +28,6 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+.venv/
+pyrightconfig.json
+**/pyrightconfig.json

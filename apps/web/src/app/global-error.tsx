@@ -5,6 +5,7 @@
  * remplace le layout racine en cas d'erreur fatale.
  */
 export default function GlobalError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -32,7 +33,13 @@ export default function GlobalError({
         <p style={{ color: "#52675d", fontSize: "0.875rem" }}>
           POUFA n&apos;a pas pu afficher cette page. Vos données sont conservées.
         </p>
+        {error?.digest ? (
+          <p style={{ color: "#6b7f75", fontSize: "0.75rem", margin: 0 }}>
+            Référence : {error.digest}
+          </p>
+        ) : null}
         <button
+          type="button"
           onClick={() => reset()}
           style={{
             padding: "0.5rem 1rem",

@@ -47,9 +47,9 @@ object PdfExport {
             pc.drawBitmap(qr, margin, margin, null)
             // Texte à droite
             var y = margin + 14f
-            val titlePaint = Paint().apply { color = Color.parseColor("#245747"); textSize = (large 14f else 9f) * MM_TO_PT / 2; isFakeBoldText = true }
-            val bodyPaint = Paint().apply { color = Color.BLACK; textSize = (large 10f else 6f) * MM_TO_PT / 2 }
-            val smallPaint = Paint().apply { color = Color.GRAY; textSize = (large 7f else 4f) * MM_TO_PT / 2 }
+            val titlePaint = Paint().apply { color = Color.parseColor("#245747"); textSize = (if (large) 14f else 9f) * MM_TO_PT / 2; isFakeBoldText = true }
+            val bodyPaint = Paint().apply { color = Color.BLACK; textSize = (if (large) 10f else 6f) * MM_TO_PT / 2 }
+            val smallPaint = Paint().apply { color = Color.GRAY; textSize = (if (large) 7f else 4f) * MM_TO_PT / 2 }
             pc.drawText("POUFA", margin + qrW + 10f, y, titlePaint); y += titlePaint.textSize + 4f
             pc.drawText(lotCode, margin + qrW + 10f, y, Paint(bodyPaint).apply { textSize = titlePaint.textSize * 1.4f }); y += titlePaint.textSize * 1.6f
             pc.drawText(farmName, margin + qrW + 10f, y, bodyPaint); y += bodyPaint.textSize + 2f
@@ -99,19 +99,38 @@ object PdfExport {
     }
 }
 
-/** Persistance durable des photos sanitaires — copie privée + checksum. */
+/** Persistance durable des photos sanitaires — copie privée + checksum SHA-256. */
 object PhotoStore {
-    /** Copie le contenu d'une Uri dans filesDir/photos/<uuid>.<ext>. Retourne (path, size). */
-    fun persist(context: Context, uri: android.net.Uri, attachmentId: String): Pair<String, Long>? =
+    /** Copie le contenu d'une Uri dans filesDir/photos/<uuid>.<ext>. Retourne (path, size, sha256). */
+    fun persist(context: Context, uri: android.net.Uri, attachmentId: String): PersistedPhoto? =
         runCatching {
             val dir = File(context.filesDir, "photos").apply { mkdirs() }
-            val ext = context.contentResolver.getType(uri)?.substringAfter("/") ?: "jpg"
+            val mime = context.contentResolver.getType(uri) ?: "image/jpeg"
+            val ext = mime.substringAfter("/").takeIf { it.isNotBlank() } ?: "jpg"
             val dest = File(dir, "$attachmentId.$ext")
+            val md = java.security.MessageDigest.getInstance("SHA-256")
             context.contentResolver.openInputStream(uri)?.use { input ->
-                dest.outputStream().use { input.copyTo(it) }
+                dest.outputStream().use { output ->
+                    val buffer = ByteArray(8192)
+                    var bytesRead: Int
+                    while (input.read(buffer).also { bytesRead = it } != -1) {
+                        output.write(buffer, 0, bytesRead)
+                        md.update(buffer, 0, bytesRead)
+                    }
+                }
             } ?: return null
-            dest.absolutePath to dest.length()
+            val sha256 = md.digest().joinToString("") { "%02x".format(it) }
+            PersistedPhoto(attachmentId, dest.absolutePath, dest.length(), mime, sha256)
         }.getOrNull()
 
-    fun exists(path: String) = File(path).exists()
+    fun exists(path: String): Boolean = File(path).exists()
+    fun delete(path: String): Boolean = runCatching { File(path).delete() }.getOrDefault(false)
 }
+
+data class PersistedPhoto(
+    val id: String,
+    val filePath: String,
+    val fileSize: Long,
+    val mimeType: String,
+    val checksum: String,
+)

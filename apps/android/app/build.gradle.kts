@@ -21,10 +21,20 @@ android {
 
         // Clé publishable Clerk = config publique client (JAMAIS la secret key).
         // Renseigner dans local.properties : POUFA_CLERK_PUBLISHABLE_KEY=pk_test_...
+        val localProperties = java.util.Properties().apply {
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                localPropertiesFile.inputStream().use { load(it) }
+            }
+        }
         val clerkKey = (project.findProperty("POUFA_CLERK_PUBLISHABLE_KEY") as String?)
+            ?: localProperties.getProperty("POUFA_CLERK_PUBLISHABLE_KEY")
             ?: System.getenv("POUFA_CLERK_PUBLISHABLE_KEY") ?: ""
+        val apiBaseUrl = (project.findProperty("POUFA_API_BASE_URL") as String?)
+            ?: localProperties.getProperty("POUFA_API_BASE_URL")
+            ?: System.getenv("POUFA_API_BASE_URL") ?: "http://10.0.2.2:8000"
         buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"$clerkKey\"")
-        buildConfigField("String", "API_BASE_URL", "\"${(project.findProperty("POUFA_API_BASE_URL") as String?) ?: "http://10.0.2.2:8000"}\"")
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {
@@ -73,5 +83,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.clerk.android.api)
     implementation(libs.clerk.android.ui)
+    testImplementation(libs.junit)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

@@ -1,5 +1,4 @@
 import uuid
-from datetime import date
 
 import psycopg
 from fastapi import APIRouter, Depends, HTTPException
@@ -40,11 +39,13 @@ def _active_band(conn, farm_id: str):
     return conn.execute(
         """
         SELECT b.id, b.official_code, b.placement_date, b.initial_count,
-               (b.initial_count - COALESCE(SUM(d.deaths),0)) AS pop
+               (b.initial_count
+                - COALESCE((SELECT SUM(d.deaths) FROM daily_records d WHERE d.band_id = b.id), 0)
+                - COALESCE((SELECT SUM(e.quantity) FROM flock_exits e WHERE e.band_id = b.id), 0)
+               ) AS pop
         FROM bands b
-        LEFT JOIN daily_records d ON d.band_id = b.id
         WHERE b.farm_id = %s AND b.status = 'active'
-        GROUP BY b.id ORDER BY b.placement_date DESC NULLS LAST LIMIT 1
+        ORDER BY b.placement_date DESC NULLS LAST LIMIT 1
         """,
         (farm_id,),
     ).fetchone()
