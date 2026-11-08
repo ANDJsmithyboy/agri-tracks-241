@@ -1,8 +1,8 @@
-import { SignIn } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import { PoufaLogo } from "@/components/poufa-logo";
 import { Badge } from "@/components/ui/badge";
 
-export default function ConnexionPage() {
+export default function InscriptionPage() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
@@ -11,16 +11,18 @@ export default function ConnexionPage() {
           <Badge variant="secondary">Système national — Gabon</Badge>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-          <SignIn
+        <div className="flex justify-center rounded-xl border border-border bg-card p-6 shadow-sm">
+          <SignUp
+            path="/inscription"
+            routing="path"
+            signInUrl="/connexion"
             fallbackRedirectUrl="/tableau-de-bord"
-            signUpFallbackRedirectUrl="/tableau-de-bord"
+            signInFallbackRedirectUrl="/tableau-de-bord"
           />
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Accès réservé aux comptes autorisés. Mot de passe oublié : contactez
-          votre administrateur POUFA.
+          Création de compte opérateur ou agent POUFA — Gabon.
         </p>
       </div>
     </div>
