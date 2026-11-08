@@ -3,98 +3,128 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * POUFA — Design System 2026
- * 4.1 Light theme — POUFA Cream (fidèle aux maquettes Kotlin)
- * 4.2 Dark theme  — Gemini-inspired Graphite
+ * POUFA — Royal Cream × Obsidian Neon (Design System 2026)
+ *
+ * Light: Royal Cream — Crème royal (#F5F0E7), surfaces ivoire (#FFFCF7),
+ *        typographie encre sombre (#28251F), or antique (#A18152),
+ *        touches mesurées de vert forêt POUFA (#245747).
+ *
+ * Dark:  Obsidian Neon — Noir profond (#0B0D10), graphite (#101216),
+ *        surfaces anthracite (#17191D), typographie ivoire (#F3F0E9),
+ *        accents néon précis et exceptionnels (#B9F27C).
  */
 :root {
   --radius: 0.875rem;
 
-  --background: #F7F8F5;
-  --foreground: #20332C;
-  --card: #FFFFFF;
-  --card-foreground: #20332C;
-  --popover: #FFFFFF;
-  --popover-foreground: #20332C;
-  --primary: #245747;
-  --primary-foreground: #FFFFFF;
-  --secondary: #EDF4EE;
-  --secondary-foreground: #245747;
-  --muted: #EFF1EE;
-  --muted-foreground: #5E6963;
-  --accent: #EDF4EE;
-  --accent-foreground: #245747;
+  --background: #F5F0E7;
+  --foreground: #28251F;
+
+  --card: #FFFCF7;
+  --card-foreground: #28251F;
+
+  --popover: #FFFCF7;
+  --popover-foreground: #28251F;
+
+  --primary: #28251F;
+  --primary-foreground: #FFFCF7;
+
+  --secondary: #EEE7DC;
+  --secondary-foreground: #28251F;
+
+  --muted: #F1EBE2;
+  --muted-foreground: #777168;
+
+  --accent: #EAE2D6;
+  --accent-foreground: #28251F;
+
   --destructive: #B53D39;
   --destructive-foreground: #FFFFFF;
-  --border: #DDE4DE;
-  --input: #C9D0CB;
+
+  --border: #E4DCCE;
+  --input: #D7CCBC;
   --ring: #245747;
 
-  --success: #1F6F54;
+  --brand-green: #245747;
+  --brand-gold: #A18152;
+  --brand-neon: #B9F27C;
+
+  --success: #245747;
   --success-foreground: #FFFFFF;
-  --warning: #E5BC55;
-  --warning-foreground: #20332C;
-  --info: #3172C7;
+  --warning: #A18152;
+  --warning-foreground: #28251F;
+  --info: #355C7D;
   --info-foreground: #FFFFFF;
 
-  --chart-1: #245747;
-  --chart-2: #578B36;
-  --chart-3: #E5BC55;
+  --chart-1: #28251F;
+  --chart-2: #245747;
+  --chart-3: #A18152;
   --chart-4: #5964C5;
-  --chart-5: #B53D39;
+  --chart-5: #777168;
 
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #20332C;
-  --sidebar-primary: #245747;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #EDF4EE;
-  --sidebar-accent-foreground: #245747;
-  --sidebar-border: #DDE4DE;
+  --sidebar: #EEE7DC;
+  --sidebar-foreground: #28251F;
+  --sidebar-primary: #28251F;
+  --sidebar-primary-foreground: #FFFCF7;
+  --sidebar-accent: #E4DCCE;
+  --sidebar-accent-foreground: #28251F;
+  --sidebar-border: #E4DCCE;
   --sidebar-ring: #245747;
 }
 
 .dark {
-  --background: #121514;
-  --foreground: #F2F3EE;
-  --card: #1B201D;
-  --card-foreground: #F2F3EE;
-  --popover: #1B201D;
-  --popover-foreground: #F2F3EE;
-  --primary: #80B69A;
-  --primary-foreground: #102017;
-  --secondary: #222B25;
-  --secondary-foreground: #E6F0E9;
-  --muted: #202522;
-  --muted-foreground: #A9B4AD;
-  --accent: #27372F;
-  --accent-foreground: #F1F5F0;
-  --destructive: #F18B87;
-  --destructive-foreground: #121514;
-  --border: #353E38;
-  --input: #414B44;
-  --ring: #80B69A;
+  --background: #0B0D10;
+  --foreground: #F3F0E9;
 
-  --success: #68B892;
-  --success-foreground: #102017;
-  --warning: #E5BC55;
-  --warning-foreground: #121514;
-  --info: #7BA3E0;
-  --info-foreground: #121514;
+  --card: #17191D;
+  --card-foreground: #F3F0E9;
 
-  --chart-1: #80B69A;
-  --chart-2: #75AD52;
-  --chart-3: #E5BC55;
-  --chart-4: #8A93E6;
-  --chart-5: #F18B87;
+  --popover: #1B1E23;
+  --popover-foreground: #F3F0E9;
 
-  --sidebar: #161A18;
-  --sidebar-foreground: #F2F3EE;
-  --sidebar-primary: #80B69A;
-  --sidebar-primary-foreground: #102017;
-  --sidebar-accent: #222B25;
-  --sidebar-accent-foreground: #F1F5F0;
-  --sidebar-border: #353E38;
-  --sidebar-ring: #80B69A;
+  --primary: #E9EAE7;
+  --primary-foreground: #101216;
+
+  --secondary: #25282D;
+  --secondary-foreground: #F3F0E9;
+
+  --muted: #202329;
+  --muted-foreground: #A3A5AA;
+
+  --accent: #292D33;
+  --accent-foreground: #F3F0E9;
+
+  --destructive: #E05252;
+  --destructive-foreground: #101216;
+
+  --border: #30343A;
+  --input: #393E45;
+  --ring: #B9F27C;
+
+  --brand-green: #8BC49B;
+  --brand-neon: #B9F27C;
+  --brand-gold: #C6A778;
+
+  --success: #B9F27C;
+  --success-foreground: #101216;
+  --warning: #C6A778;
+  --warning-foreground: #101216;
+  --info: #70A0D0;
+  --info-foreground: #101216;
+
+  --chart-1: #E9EAE7;
+  --chart-2: #B9F27C;
+  --chart-3: #8BC49B;
+  --chart-4: #C6A778;
+  --chart-5: #A3A5AA;
+
+  --sidebar: #101216;
+  --sidebar-foreground: #F3F0E9;
+  --sidebar-primary: #E9EAE7;
+  --sidebar-primary-foreground: #101216;
+  --sidebar-accent: #1E2228;
+  --sidebar-accent-foreground: #F3F0E9;
+  --sidebar-border: #262A30;
+  --sidebar-ring: #B9F27C;
 }
 
 @theme inline {
@@ -117,6 +147,10 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-brand-green: var(--brand-green);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-neon: var(--brand-neon);
 
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -154,6 +188,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 }

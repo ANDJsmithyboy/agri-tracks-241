@@ -27,13 +27,13 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-border bg-card transition-[width] duration-300 ease-out lg:flex",
+        "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-out lg:flex",
         collapsed ? "w-[68px]" : "w-64",
       )}
     >
       <div
         className={cn(
-          "flex h-16 shrink-0 items-center border-b border-border px-3",
+          "flex h-16 shrink-0 items-center border-b border-sidebar-border px-3",
           collapsed ? "justify-center" : "justify-between",
         )}
       >
@@ -43,7 +43,7 @@ export function Sidebar() {
             type="button"
             onClick={toggle}
             aria-label="Réduire le menu"
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <ChevronsLeft className="size-4" aria-hidden />
           </button>
@@ -51,12 +51,12 @@ export function Sidebar() {
       </div>
 
       {collapsed && (
-        <div className="flex justify-center border-b border-border px-2 py-2">
+        <div className="flex justify-center border-b border-sidebar-border px-2 py-2">
           <button
             type="button"
             onClick={toggle}
             aria-label="Déplier le menu"
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
           >
             <ChevronsRight className="size-4" aria-hidden />
           </button>
@@ -65,7 +65,7 @@ export function Sidebar() {
 
       <NavList collapsed={collapsed} />
 
-      <div className="shrink-0 border-t border-border p-3">
+      <div className="shrink-0 border-t border-sidebar-border p-3">
         {collapsed ? (
           <div className="flex justify-center">
             <SyncStatusBadge compact />

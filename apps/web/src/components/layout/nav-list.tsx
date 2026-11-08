@@ -28,21 +28,31 @@ function NavLink({
         title={collapsed ? item.label : undefined}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
-          "hover:bg-accent hover:text-accent-foreground",
+          "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
           active
-            ? "bg-accent text-accent-foreground"
-            : "text-muted-foreground",
+            ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-xs"
+            : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
           collapsed && "justify-center px-2",
         )}
       >
+        {active && (
+          <span
+            aria-hidden
+            className="absolute left-1 top-2 bottom-2 w-1 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]"
+          />
+        )}
         <Icon
-          className={cn("size-4 shrink-0", active && "text-primary")}
+          className={cn(
+            "size-4 shrink-0 transition-colors",
+            active
+              ? "text-[var(--brand-green)] dark:text-[var(--brand-neon)]"
+              : "text-muted-foreground group-hover:text-sidebar-foreground",
+          )}
           aria-hidden
         />
         {!collapsed && <span className="truncate">{item.label}</span>}
         {!collapsed && item.phase === "ultérieur" && (
-          <span className="ml-auto rounded border border-border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <span className="ml-auto rounded border border-sidebar-border px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
             Bientôt
           </span>
         )}

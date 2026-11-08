@@ -109,3 +109,4 @@ export function PoufaEmblem({ className }: { className?: string }) {
 }
 
 export default PoufaEmblem;
+

@@ -13,8 +13,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const THEMES = [
-  { value: "light", label: "Clair", icon: Sun },
-  { value: "dark", label: "Sombre", icon: Moon },
+  { value: "light", label: "Clair · Royal Cream", icon: Sun },
+  { value: "dark", label: "Sombre · Obsidian Neon", icon: Moon },
   { value: "system", label: "Système", icon: Monitor },
 ] as const;
 
@@ -49,7 +49,7 @@ export function ThemeToggle() {
             {label}
             <span
               className={cn(
-                "ml-auto size-1.5 rounded-full bg-primary",
+                "ml-auto size-1.5 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]",
                 theme !== value && "invisible",
               )}
               aria-hidden

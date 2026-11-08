@@ -51,7 +51,7 @@ export default async function DashboardPage() {
       <PageHeader
         title="Tableau de bord"
         description="Vue d'ensemble de la production avicole nationale et provinciale."
-        badge={<Badge variant="secondary">National · Neon Live</Badge>}
+        badge={<Badge variant="brand">National · Neon Live</Badge>}
         actions={
           <>
             <Select defaultValue="Toutes les provinces">
@@ -188,7 +188,7 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="size-4 text-primary" aria-hidden />
+                <Sparkles className="size-4 text-[var(--brand-green)] dark:text-[var(--brand-neon)]" aria-hidden />
                 POUFA AI
               </CardTitle>
               <CardDescription>
@@ -196,8 +196,8 @@ export default async function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="rounded-lg border border-border bg-secondary/50 p-3 text-xs leading-relaxed text-foreground">
-                <p className="font-medium text-primary">
+              <div className="rounded-lg border border-border bg-secondary/40 p-3 text-xs leading-relaxed text-foreground">
+                <p className="font-medium text-[var(--brand-green)] dark:text-[var(--brand-neon)]">
                   Synthèse zootechnique en temps réel
                 </p>
                 <p className="mt-1 text-muted-foreground">
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
                   LP-2026-000142.
                 </p>
               </div>
-              <Button size="sm" className="w-full" asChild>
+              <Button size="sm" variant="brand" className="w-full" asChild>
                 <Link href="/ia">Ouvrir POUFA AI</Link>
               </Button>
             </CardContent>

@@ -626,7 +626,7 @@ export default function PoufaAiPage() {
                             <FormattedMessageContent content={msg.content} />
                           ) : (
                             <div className="flex items-center gap-2 py-1 text-xs text-muted-foreground">
-                              <span className="inline-block size-2 animate-pulse rounded-full bg-primary" />
+                              <span className="inline-block size-2 animate-pulse rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]" />
                               Analyse des données de l&apos;exploitation…
                             </div>
                           )}
@@ -634,7 +634,7 @@ export default function PoufaAiPage() {
                           {msg.status === "streaming" && msg.content && (
                             <span
                               aria-hidden
-                              className="ml-1 inline-block h-3.5 w-1.5 animate-pulse align-middle bg-primary"
+                              className="ml-1 inline-block h-3.5 w-1.5 animate-pulse align-middle bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]"
                             />
                           )}
 
@@ -694,7 +694,7 @@ export default function PoufaAiPage() {
 
         {/* Persistent Bottom Composer */}
         <footer className="border-t border-border p-3 sm:px-6 sm:py-4">
-          <div className="mx-auto flex max-w-2xl items-end gap-2 rounded-xl border border-input bg-background px-3 py-2 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
+          <div className="mx-auto flex max-w-2xl items-end gap-2 rounded-xl border border-input bg-card px-3 py-2 shadow-xs transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
             <textarea
               rows={1}
               value={input}
@@ -720,6 +720,7 @@ export default function PoufaAiPage() {
               <Button
                 type="button"
                 size="sm"
+                variant="brand"
                 disabled={!input.trim()}
                 onClick={() => void sendMessage(input)}
                 aria-label="Envoyer le message"
