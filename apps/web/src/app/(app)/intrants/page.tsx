@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PackagePlus } from "lucide-react";
+import { Bird, Package, PackagePlus, Pill, Syringe } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
 import { Badge } from "@/components/ui/badge";
@@ -48,10 +48,10 @@ export default async function IntrantsPage() {
 
       <section aria-label="Stocks">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          <StatCard label="Aliment — stock confirmé" value={`${totalReceivedKg - 85} kg`} hint="1 200 kg reçus − 85 kg consommés" />
-          <StatCard label="Poussins — effectif actif" value={currentPop} hint="Sujets présents" />
-          <StatCard label="Vaccins — stock" value="500 doses" hint="Gumboro & Newcastle" />
-          <StatCard label="Médicaments — stock" value="Conforme" hint="Aucun retrait en cours" />
+          <StatCard label="Aliment — stock confirmé" value={`${totalReceivedKg - 85} kg`} hint="1 200 kg reçus − 85 kg consommés" icon={Package} />
+          <StatCard label="Poussins — effectif actif" value={currentPop} hint="Sujets présents" icon={Bird} />
+          <StatCard label="Vaccins — stock" value="500 doses" hint="Gumboro & Newcastle" icon={Syringe} />
+          <StatCard label="Médicaments — stock" value="Conforme" hint="Aucun retrait en cours" icon={Pill} />
         </div>
       </section>
 
