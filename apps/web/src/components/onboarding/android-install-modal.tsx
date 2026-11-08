@@ -33,19 +33,6 @@ export function AndroidInstallModal({
   open,
   onOpenChange,
 }: AndroidInstallModalProps) {
-  const [downloading, setDownloading] = useState(false);
-
-  const handleDownload = () => {
-    setDownloading(true);
-    // Simule ou déclenche le téléchargement du binaire
-    const link = document.createElement("a");
-    link.href = "https://github.com/smartandjai/Agri-track-241/actions/runs/42518891662";
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.click();
-    setTimeout(() => setDownloading(false), 2000);
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl sm:max-w-xl">
@@ -53,18 +40,18 @@ export function AndroidInstallModal({
           <div className="flex items-center gap-2">
             <PoufaEmblem className="size-6" />
             <Badge variant="outline" className="font-mono text-xs">
-              Android Native · Kotlin Compose
+              Cloudflare R2 Direct
             </Badge>
             <Badge variant="brand" className="text-xs">
-              CI Pass 100%
+              0.1.0-kimba
             </Badge>
           </div>
           <DialogTitle className="text-xl font-semibold tracking-tight">
-            Installer POUFA sur smartphone Android
+            Télécharger POUFA pour Android
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
             Application 100% native Kotlin conçue pour les éleveurs en poulailler :
-            fonctionne intégralement sans connexion Internet grâce à la base locale Room.
+            téléchargement direct sécurisé depuis Cloudflare R2, sans inscription requise.
           </DialogDescription>
         </DialogHeader>
 
@@ -202,12 +189,13 @@ export function AndroidInstallModal({
             <Button
               variant="brand"
               size="sm"
-              onClick={handleDownload}
-              disabled={downloading}
+              asChild
               className="gap-2"
             >
-              <Download className="size-4" aria-hidden />
-              <span>{downloading ? "Téléchargement…" : "Télécharger l'APK"}</span>
+              <a href="/telecharger/android">
+                <Download className="size-4" aria-hidden />
+                <span>Télécharger pour Android</span>
+              </a>
             </Button>
           </div>
         </DialogFooter>
@@ -215,3 +203,4 @@ export function AndroidInstallModal({
     </Dialog>
   );
 }
+

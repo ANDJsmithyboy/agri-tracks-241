@@ -151,3 +151,4 @@ export function startGuidedTour(onComplete?: () => void) {
 
   driverInstance.drive();
 }
+
