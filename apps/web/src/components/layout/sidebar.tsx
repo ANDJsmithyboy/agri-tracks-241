@@ -27,13 +27,13 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-out lg:flex",
-        collapsed ? "w-[68px]" : "w-64",
+        "sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-out lg:flex",
+        collapsed ? "w-16" : "w-64",
       )}
     >
       <div
         className={cn(
-          "flex h-16 shrink-0 items-center border-b border-sidebar-border px-3",
+          "flex h-14 shrink-0 items-center border-b border-sidebar-border px-3.5",
           collapsed ? "justify-center" : "justify-between",
         )}
       >

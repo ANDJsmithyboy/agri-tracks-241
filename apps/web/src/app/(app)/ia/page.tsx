@@ -694,15 +694,15 @@ export default function PoufaAiPage() {
 
         {/* Persistent Bottom Composer */}
         <footer className="border-t border-border p-3 sm:px-6 sm:py-4">
-          <div className="mx-auto flex max-w-2xl items-end gap-2 rounded-xl border border-input bg-card px-3 py-2 shadow-xs transition-colors focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
+          <div className="mx-auto flex max-w-2xl items-end gap-2.5 rounded-2xl border border-input bg-card px-3.5 py-2.5 shadow-xs transition-all focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
             <textarea
               rows={1}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Posez une question à POUFA AI…"
+              placeholder="Posez une question sur votre élevage à POUFA AI…"
               aria-label="Message à POUFA AI"
-              className="max-h-36 min-h-[28px] flex-1 resize-none bg-transparent py-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+              className="max-h-36 min-h-[30px] flex-1 resize-none bg-transparent py-1 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             {isStreaming ? (
               <Button
@@ -711,10 +711,10 @@ export default function PoufaAiPage() {
                 variant="outline"
                 onClick={handleStop}
                 aria-label="Arrêter la génération"
-                className="h-8 shrink-0 gap-1.5"
+                className="h-8 shrink-0 gap-1.5 rounded-lg px-3"
               >
-                <Square className="size-3.5 fill-current" aria-hidden />
-                Arrêter
+                <Square className="size-3 fill-current" aria-hidden />
+                <span className="text-xs">Arrêter</span>
               </Button>
             ) : (
               <Button
@@ -724,17 +724,16 @@ export default function PoufaAiPage() {
                 disabled={!input.trim()}
                 onClick={() => void sendMessage(input)}
                 aria-label="Envoyer le message"
-                className="h-8 shrink-0 gap-1.5"
+                className="size-8 shrink-0 rounded-lg p-0 flex items-center justify-center"
               >
-                <Send className="size-3.5" aria-hidden />
-                Envoyer
+                <Send className="size-3.5 translate-x-[-0.5px] translate-y-[-0.5px]" aria-hidden />
               </Button>
             )}
           </div>
-          <p className="mt-1.5 text-center text-[11px] text-muted-foreground">
-            POUFA AI s&apos;appuie sur les données autorisées de votre ferme en
-            lecture seule et ne remplace pas un diagnostic vétérinaire.
-          </p>
+          <div className="mx-auto mt-2 flex max-w-2xl items-center justify-between px-1 text-[11px] text-muted-foreground">
+            <span>Données d&apos;élevage en lecture seule. Ne remplace pas un avis vétérinaire.</span>
+            <span className="hidden sm:inline font-mono text-[10px] text-muted-foreground/60">↵ Envoyer · ⇧↵ Ligne</span>
+          </div>
         </footer>
       </section>
     </div>

@@ -20,7 +20,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex min-w-0 flex-1 flex-col">
           <Topbar onOpenMenu={() => setMenuOpen(true)} />
           <OfflineBanner />
-          <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
+          <main className="mx-auto w-full max-w-[1440px] flex-1 px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-10">
             {children}
           </main>
         </div>

@@ -28,22 +28,22 @@ function NavLink({
         title={collapsed ? item.label : undefined}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
+          "group relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium transition-all duration-150",
           active
             ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold shadow-xs"
             : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
-          collapsed && "justify-center px-2",
+          collapsed && "justify-center px-0",
         )}
       >
         {active && (
           <span
             aria-hidden
-            className="absolute left-1 top-2 bottom-2 w-1 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]"
+            className="absolute left-1 top-2 bottom-2 w-[3px] rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]"
           />
         )}
         <Icon
           className={cn(
-            "size-4 shrink-0 transition-colors",
+            "size-[18px] shrink-0 transition-colors",
             active
               ? "text-[var(--brand-green)] dark:text-[var(--brand-neon)]"
               : "text-muted-foreground group-hover:text-sidebar-foreground",

@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { Bell, Menu, Search } from "lucide-react";
 import { toast } from "sonner";
+import { CommandMenu } from "@/components/layout/command-menu";
 import { PoufaLogo } from "@/components/poufa-logo";
 import { RoleSwitcher } from "@/components/layout/role-switcher";
 import { SyncStatusBadge } from "@/components/layout/sync-status";
@@ -36,9 +38,12 @@ function currentPageLabel(pathname: string): string {
 export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
   const pathname = usePathname();
   const pageLabel = currentPageLabel(pathname);
+  const [commandOpen, setCommandOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-6">
+    <>
+      <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} />
+      <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 sm:px-6">
       <Button
         variant="ghost"
         size="icon"
@@ -69,11 +74,11 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
         <Button
           variant="outline"
           size="sm"
-          className="hidden h-9 gap-2 text-muted-foreground md:inline-flex"
-          onClick={() => toast.info("Recherche globale — disponible prochainement.")}
+          className="hidden h-8 gap-2 text-muted-foreground md:inline-flex hover:border-foreground/20 text-xs"
+          onClick={() => setCommandOpen(true)}
         >
-          <Search className="size-4" aria-hidden />
-          <span className="text-xs">Rechercher…</span>
+          <Search className="size-3.5" aria-hidden />
+          <span>Rechercher…</span>
           <kbd className="rounded border border-border bg-muted px-1.5 font-mono text-[10px]">
             ⌘K
           </kbd>
@@ -116,5 +121,6 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
         />
       </div>
     </header>
+    </>
   );
 }
