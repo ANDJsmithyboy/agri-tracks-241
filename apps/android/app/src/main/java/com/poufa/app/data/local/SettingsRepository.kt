@@ -18,6 +18,7 @@ class SettingsRepository(private val context: Context) {
         val SELECTED_FARM_PREFIX = "selected_farm_"   // par compte Clerk
         val WIFI_ONLY_SYNC = longPreferencesKey("wifi_only_sync")
         val TEXT_SCALE = stringPreferencesKey("text_scale")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
         val LANGUAGE = stringPreferencesKey("language")
         val DATE_FORMAT = stringPreferencesKey("date_format")
         val UNITS = stringPreferencesKey("units")
@@ -47,5 +48,12 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setTextScale(scale: String) {
         context.dataStore.edit { it[Keys.TEXT_SCALE] = scale }
+    }
+
+    val themeMode: Flow<String> =
+        context.dataStore.data.map { it[Keys.THEME_MODE] ?: "system" }
+
+    suspend fun setThemeMode(mode: String) {
+        context.dataStore.edit { it[Keys.THEME_MODE] = mode }
     }
 }

@@ -3,99 +3,98 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * POUFA — Design tokens
- * Palette institutionnelle (cahier des charges, § UI/UX) :
- *   primaire #176B45 · forêt #103D30 · encre #14241E
- *   succès #168451 · avertissement #D48B19 · critique #C63838 · info #3172C7
+ * POUFA — Design System 2026
+ * 4.1 Light theme — POUFA Cream (fidèle aux maquettes Kotlin)
+ * 4.2 Dark theme  — Gemini-inspired Graphite
  */
 :root {
-  --radius: 0.625rem;
+  --radius: 0.875rem;
 
-  --background: #f7f9f7;
-  --foreground: #14241e;
-  --card: #ffffff;
-  --card-foreground: #14241e;
-  --popover: #ffffff;
-  --popover-foreground: #14241e;
-  --primary: #176b45;
-  --primary-foreground: #ffffff;
-  --secondary: #eff4f0;
-  --secondary-foreground: #103d30;
-  --muted: #eff4f0;
-  --muted-foreground: #52675d;
-  --accent: #e2eee7;
-  --accent-foreground: #103d30;
-  --destructive: #c63838;
-  --destructive-foreground: #ffffff;
-  --border: #dfe8e2;
-  --input: #dfe8e2;
-  --ring: #176b45;
+  --background: #F7F8F5;
+  --foreground: #20332C;
+  --card: #FFFFFF;
+  --card-foreground: #20332C;
+  --popover: #FFFFFF;
+  --popover-foreground: #20332C;
+  --primary: #245747;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EDF4EE;
+  --secondary-foreground: #245747;
+  --muted: #EFF1EE;
+  --muted-foreground: #5E6963;
+  --accent: #EDF4EE;
+  --accent-foreground: #245747;
+  --destructive: #B53D39;
+  --destructive-foreground: #FFFFFF;
+  --border: #DDE4DE;
+  --input: #C9D0CB;
+  --ring: #245747;
 
-  --success: #168451;
-  --success-foreground: #ffffff;
-  --warning: #d48b19;
-  --warning-foreground: #14241e;
-  --info: #3172c7;
-  --info-foreground: #ffffff;
+  --success: #1F6F54;
+  --success-foreground: #FFFFFF;
+  --warning: #E5BC55;
+  --warning-foreground: #20332C;
+  --info: #3172C7;
+  --info-foreground: #FFFFFF;
 
-  --chart-1: #176b45;
-  --chart-2: #3172c7;
-  --chart-3: #d48b19;
-  --chart-4: #7a5cc7;
-  --chart-5: #c63838;
+  --chart-1: #245747;
+  --chart-2: #578B36;
+  --chart-3: #E5BC55;
+  --chart-4: #5964C5;
+  --chart-5: #B53D39;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #14241e;
-  --sidebar-primary: #176b45;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e2eee7;
-  --sidebar-accent-foreground: #103d30;
-  --sidebar-border: #dfe8e2;
-  --sidebar-ring: #176b45;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #20332C;
+  --sidebar-primary: #245747;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EDF4EE;
+  --sidebar-accent-foreground: #245747;
+  --sidebar-border: #DDE4DE;
+  --sidebar-ring: #245747;
 }
 
 .dark {
-  --background: #0c1713;
-  --foreground: #e8f0eb;
-  --card: #12211b;
-  --card-foreground: #e8f0eb;
-  --popover: #12211b;
-  --popover-foreground: #e8f0eb;
-  --primary: #3aa476;
-  --primary-foreground: #081510;
-  --secondary: #1b2e26;
-  --secondary-foreground: #dce9e2;
-  --muted: #1b2e26;
-  --muted-foreground: #8fa89c;
-  --accent: #1e3a2e;
-  --accent-foreground: #dce9e2;
-  --destructive: #d9534f;
-  --destructive-foreground: #ffffff;
-  --border: #22382e;
-  --input: #22382e;
-  --ring: #3aa476;
+  --background: #121514;
+  --foreground: #F2F3EE;
+  --card: #1B201D;
+  --card-foreground: #F2F3EE;
+  --popover: #1B201D;
+  --popover-foreground: #F2F3EE;
+  --primary: #80B69A;
+  --primary-foreground: #102017;
+  --secondary: #222B25;
+  --secondary-foreground: #E6F0E9;
+  --muted: #202522;
+  --muted-foreground: #A9B4AD;
+  --accent: #27372F;
+  --accent-foreground: #F1F5F0;
+  --destructive: #F18B87;
+  --destructive-foreground: #121514;
+  --border: #353E38;
+  --input: #414B44;
+  --ring: #80B69A;
 
-  --success: #2fbf7f;
-  --success-foreground: #081510;
-  --warning: #e0a13c;
-  --warning-foreground: #14241e;
-  --info: #5b8fd9;
-  --info-foreground: #ffffff;
+  --success: #68B892;
+  --success-foreground: #102017;
+  --warning: #E5BC55;
+  --warning-foreground: #121514;
+  --info: #7BA3E0;
+  --info-foreground: #121514;
 
-  --chart-1: #3aa476;
-  --chart-2: #5b8fd9;
-  --chart-3: #e0a13c;
-  --chart-4: #9a7fd0;
-  --chart-5: #d9534f;
+  --chart-1: #80B69A;
+  --chart-2: #75AD52;
+  --chart-3: #E5BC55;
+  --chart-4: #8A93E6;
+  --chart-5: #F18B87;
 
-  --sidebar: #0f1d18;
-  --sidebar-foreground: #e8f0eb;
-  --sidebar-primary: #3aa476;
-  --sidebar-primary-foreground: #081510;
-  --sidebar-accent: #1e3a2e;
-  --sidebar-accent-foreground: #dce9e2;
-  --sidebar-border: #22382e;
-  --sidebar-ring: #3aa476;
+  --sidebar: #161A18;
+  --sidebar-foreground: #F2F3EE;
+  --sidebar-primary: #80B69A;
+  --sidebar-primary-foreground: #102017;
+  --sidebar-accent: #222B25;
+  --sidebar-accent-foreground: #F1F5F0;
+  --sidebar-border: #353E38;
+  --sidebar-ring: #80B69A;
 }
 
 @theme inline {

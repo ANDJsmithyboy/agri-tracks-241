@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .db import init_db
-from .routers import farms_router, router
+from .routers import ai_router, farms_router, router
 
 
 @asynccontextmanager
@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="POUFA API",
     version="0.1.0",
-    description="API métier POUFA — synchronisation offline-first, Neon PostgreSQL, auth Clerk.",
+    description="API métier POUFA — synchronisation offline-first, Neon PostgreSQL, auth Clerk, POUFA AI.",
     lifespan=lifespan,
 )
 
@@ -32,3 +32,4 @@ app.add_middleware(
 
 app.include_router(router)
 app.include_router(farms_router)
+app.include_router(ai_router)

@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     clerk_jwks_url: str = ""
     clerk_authorized_parties: str = ""
     cors_origins: str = "http://localhost:3000"
+    deepseek_api_key: str = ""
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-flash"
 
     @property
     def authorized_parties(self) -> list[str]:

@@ -1,14 +1,18 @@
 package com.poufa.app.data.remote
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -55,6 +59,37 @@ data class FarmCreateRequest(
     @SerialName("farming_type") val farmingType: String,
     @SerialName("building_count_declared") val buildingCountDeclared: Int? = null,
     @SerialName("client_id") val clientId: String,
+)
+
+@Serializable
+data class AiConversationDto(
+    val id: String,
+    val title: String,
+    val farmId: String? = null,
+    val createdAt: String? = null,
+    val updatedAt: String? = null,
+)
+
+@Serializable
+data class AiConversationsResponse(
+    val conversations: List<AiConversationDto> = emptyList(),
+)
+
+@Serializable
+data class AiMessageDto(
+    val id: String,
+    val role: String,
+    val content: String,
+    val status: String = "complete",
+    val createdAt: String? = null,
+)
+
+@Serializable
+data class AiConversationDetailDto(
+    val id: String,
+    val title: String,
+    val farmId: String? = null,
+    val messages: List<AiMessageDto> = emptyList(),
 )
 
 class PoufaApiClient(
@@ -112,4 +147,75 @@ class PoufaApiClient(
 
     suspend fun syncPull(cursor: Int): String =
         request("/api/v1/sync/pull?cursor=$cursor", "GET")
+
+    suspend fun listAiConversations(): AiConversationsResponse =
+        json.decodeFromString(request("/api/v1/ai/conversations", "GET"))
+
+    suspend fun getAiConversation(conversationId: String): AiConversationDetailDto =
+        json.decodeFromString(request("/api/v1/ai/conversations/$conversationId", "GET"))
+
+    suspend fun deleteAiConversation(conversationId: String): String =
+        request("/api/v1/ai/conversations/$conversationId", "DELETE")
+
+    /**
+     * Streaming SSE incrémental depuis FastAPI (/api/v1/ai/conversations/{id}/stream).
+     * Aucune clé fournisseur n'est exposée au client Android.
+     */
+    suspend fun streamAiMessage(
+        conversationId: String,
+        content: String,
+        farmId: String? = null,
+        onDelta: (String) -> Unit,
+    ) {
+        val token = tokenProvider.getToken()
+        val payload = JSONObject().apply {
+            put("content", content)
+            if (farmId != null) put("farm_id", farmId)
+        }.toString()
+
+        val req = Request.Builder()
+            .url(baseUrl.trimEnd('/') + "/api/v1/ai/conversations/$conversationId/stream")
+            .header("Accept", "text/event-stream")
+            .apply {
+                if (token != null) header("Authorization", "Bearer $token")
+            }
+            .post(payload.toRequestBody("application/json".toMediaType()))
+            .build()
+
+        withContext(Dispatchers.IO) {
+            val call = http.newCall(req)
+            call.execute().use { resp ->
+                if (!resp.isSuccessful) {
+                    val errText = resp.body.string()
+                    throw ApiException(resp.code, null, errText.ifBlank { "HTTP ${resp.code}" })
+                }
+                val source = resp.body.source()
+                var currentEvent = "message"
+                while (!source.exhausted()) {
+                    coroutineContext.ensureActive()
+                    val line = source.readUtf8Line() ?: break
+                    when {
+                        line.startsWith("event:") -> {
+                            currentEvent = line.removePrefix("event:").trim()
+                        }
+                        line.startsWith("data:") -> {
+                            val dataStr = line.removePrefix("data:").trim()
+                            if (dataStr.isNotEmpty()) {
+                                val obj = runCatching { json.parseToJsonElement(dataStr).jsonObject }.getOrNull()
+                                if (currentEvent == "message.delta") {
+                                    val deltaText = obj?.get("text")?.jsonPrimitive?.content
+                                    if (!deltaText.isNullOrEmpty()) {
+                                        onDelta(deltaText)
+                                    }
+                                } else if (currentEvent == "message.error") {
+                                    val errMsg = obj?.get("error")?.jsonPrimitive?.content ?: "Erreur POUFA AI"
+                                    throw IOException(errMsg)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -1,11 +1,74 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp" android:height="108dp"
-    android:viewportWidth="108" android:viewportHeight="108">
-    <!-- Monogramme POUFA : "P" stylisé sur fond vert institutionnel -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M38,66 L38,42 L52,42 C60,42 66,47 66,55 C66,63 60,66 52,66 Z M44,48 L44,60 L52,60 C56,60 60,58 60,55 C60,52 56,48 52,48 Z"/>
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M70,66 L70,42 L76,42 L76,60 L84,60 L84,66 Z"/>
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="256"
+    android:viewportHeight="256">
+    <group
+        android:pivotX="128"
+        android:pivotY="128"
+        android:scaleX="0.68"
+        android:scaleY="0.68">
+        <!-- Outer Dark Forest-Green Egg Frame -->
+        <path
+            android:fillColor="#194D3B"
+            android:pathData="M126,14 C74,14 28,84 28,152 C28,210 70,248 126,248 C182,248 224,210 224,152 C224,84 178,14 126,14 Z" />
+        <!-- Inner Pale-Mint Egg Canvas -->
+        <path
+            android:fillColor="#EEF5F1"
+            android:pathData="M126,24 C80,24 38,89 38,152 C38,204 75,238 126,238 C177,238 214,204 214,152 C214,89 172,24 126,24 Z" />
+        <!-- Gold Comb -->
+        <path
+            android:fillColor="#DAA025"
+            android:pathData="M125,65 C120,57 125,49 134,50 C137,42 150,42 154,51 C163,49 170,57 166,68 C156,59 138,58 125,65 Z" />
+        <!-- Gold Beak -->
+        <path
+            android:fillColor="#DAA025"
+            android:pathData="M171,74 L182,83 L168,86 Q170,80 171,74 Z" />
+        <!-- Stylized Hen Silhouette with Inner Egg Cut-out -->
+        <path
+            android:fillColor="#194D3B"
+            android:fillType="evenOdd"
+            android:pathData="M52,112 C68,119 88,121 104,108 C115,98 121,79 133,69 C144,61 160,63 169,79 C165,86 161,91 162,97 C164,106 183,124 188,145 C191,156 189,167 186,175 L180,175 C184,164 184,150 177,136 C170,121 159,112 149,112 C135,112 120,132 120,157 C120,177 131,191 144,195 L139,203 C117,190 94,182 73,180 C60,165 48,142 52,112 Z" />
+        <!-- Eye -->
+        <path
+            android:fillColor="#EEF5F1"
+            android:pathData="M155,73 A4,4 0 1,1 154.9,73 Z" />
+        <!-- Circuit Paths & Nodes -->
+        <path
+            android:strokeColor="#EEF5F1"
+            android:strokeWidth="4.5"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M51,141 L71,141 L80,132 L101,132 L112,121 M54,158 L74,158 L83,149 L107,149 M62,172 L97,172" />
+        <path
+            android:fillColor="#EEF5F1"
+            android:pathData="M112,114 A7,7 0 1,1 111.9,114 Z M107,142 A7,7 0 1,1 106.9,142 Z M97,165.5 A6.5,6.5 0 1,1 96.9,165.5 Z" />
+        <path
+            android:fillColor="#194D3B"
+            android:pathData="M112,117.5 A3.5,3.5 0 1,1 111.9,117.5 Z M107,145.5 A3.5,3.5 0 1,1 106.9,145.5 Z M97,168.8 A3.2,3.2 0 1,1 96.9,168.8 Z" />
+        <!-- QR Brackets -->
+        <path
+            android:strokeColor="#5964C5"
+            android:strokeWidth="3.6"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:pathData="M132,145 L132,138 Q132,135 135,135 L142,135 M161,135 L168,135 Q171,135 171,138 L171,145 M132,165 L132,172 Q132,175 135,175 L142,175 M161,175 L168,175 Q171,175 171,172 L171,165" />
+        <!-- QR Finder & Modules -->
+        <path
+            android:strokeColor="#194D3B"
+            android:strokeWidth="2.6"
+            android:pathData="M140,143 L150,143 L150,153 L140,153 Z M140,158 L150,158 L150,168 L140,168 Z" />
+        <path
+            android:fillColor="#194D3B"
+            android:pathData="M155,142 L164.5,142 L164.5,151.5 L155,151.5 Z M154,155 L158,155 L158,159 L154,159 Z M160.5,155 L164.5,155 L164.5,161 L160.5,161 Z M154,162 L158,162 L158,168.5 L154,168.5 Z M160.5,164 L164.5,164 L164.5,168.5 L160.5,168.5 Z" />
+        <!-- Agricultural Furrows & Leaf -->
+        <path
+            android:fillColor="#578B36"
+            android:pathData="M51,185 C78,182 114,191 138,212 L137,222 C112,202 82,195 58,197 Z M62,204 C85,202 114,209 136,228 C126,232 115,234 104,233 C89,221 75,216 62,217 Z M82,225 C99,224 117,229 133,236 C114,237 96,233 82,225 Z M141,231 C139,201 162,183 204,173 C201,205 182,223 146,234 Z" />
+        <path
+            android:strokeColor="#EEF5F1"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M143,233 C152,214 164,201 178,193" />
+    </group>
 </vector>

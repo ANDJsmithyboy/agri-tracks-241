@@ -189,20 +189,25 @@ export default async function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Sparkles className="size-4 text-primary" aria-hidden />
-                POUFA AI (Gaboma AI / Ñkyel AI)
+                POUFA AI
               </CardTitle>
               <CardDescription>
-                Extension d&apos;assistance multilingue (Français, Fang, Punu, Omyènè, Nzébi).
+                Votre assistant pour le suivi avicole.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <DesignPending
-                label="Synthèse zootechnique explicable"
-                hint="Bande B-2026-014 : viabilité 94,8 %, GMQ conforme (2,15 kg), 1 lot de cession (300 sujets) tracé sous LP-2026-000142."
-                className="min-h-32"
-              />
-              <Button size="sm" className="mt-3 w-full" asChild>
-                <Link href="/ia">Poser une question</Link>
+            <CardContent className="space-y-3">
+              <div className="rounded-lg border border-border bg-secondary/50 p-3 text-xs leading-relaxed text-foreground">
+                <p className="font-medium text-primary">
+                  Synthèse zootechnique en temps réel
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  Bande B-2026-014 : viabilité 94,8 %, 648 sujets présents, GMQ
+                  conforme (2,15 kg), 1 lot de cession (300 sujets) tracé sous
+                  LP-2026-000142.
+                </p>
+              </div>
+              <Button size="sm" className="w-full" asChild>
+                <Link href="/ia">Ouvrir POUFA AI</Link>
               </Button>
             </CardContent>
           </Card>

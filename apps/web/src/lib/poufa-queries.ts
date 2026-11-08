@@ -301,3 +301,4 @@ export async function getLotsData(query?: string): Promise<LotRow[]> {
     return FALLBACK_LOTS;
   }
 }
+

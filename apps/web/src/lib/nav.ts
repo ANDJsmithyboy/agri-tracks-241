@@ -180,7 +180,7 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/ia",
         icon: Sparkles,
         roles: "all",
-        phase: "ultérieur",
+        phase: "mvp",
       },
     ],
   },

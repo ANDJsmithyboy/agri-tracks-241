@@ -1,5 +1,6 @@
 package com.poufa.app.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,10 +21,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.poufa.app.R
 import com.poufa.app.ui.theme.*
 
 // ── Dimensions (spec B4) ────────────────────────────────────────────────
@@ -96,9 +100,20 @@ fun PoufaSecondaryButton(
 }
 
 @Composable
+fun PoufaEmblem(size: Dp = 28.dp, modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(id = R.drawable.poufa_emblem),
+        contentDescription = "Emblème POUFA",
+        modifier = modifier.size(size),
+    )
+}
+
+@Composable
 fun PoufaBrandHeader(subtitle: String? = null) {
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            PoufaEmblem(size = 28.dp)
+            Spacer(Modifier.width(8.dp))
             Text("POUFA", fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
             Spacer(Modifier.width(6.dp))
             Box(Modifier.size(8.dp).background(PoufaBrandGold, RoundedCornerShape(2.dp)))

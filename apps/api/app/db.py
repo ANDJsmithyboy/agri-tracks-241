@@ -236,6 +236,27 @@ CREATE TABLE IF NOT EXISTS app_notifications (
     section TEXT NOT NULL DEFAULT 'general',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS ai_conversations (
+    id UUID PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    farm_id UUID REFERENCES farms(id) ON DELETE SET NULL,
+    title TEXT NOT NULL DEFAULT 'Nouvelle conversation',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_ai_conv_user ON ai_conversations (user_id, updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS ai_messages (
+    id UUID PRIMARY KEY,
+    conversation_id UUID NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK (role IN ('user', 'assistant', 'system')),
+    content TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'complete',
+    token_usage INT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_ai_msg_conv ON ai_messages (conversation_id, created_at ASC);
 """
 
 _pool: ConnectionPool | None = None

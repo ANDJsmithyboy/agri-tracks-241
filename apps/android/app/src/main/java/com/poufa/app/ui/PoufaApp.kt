@@ -29,6 +29,7 @@ import androidx.navigation.navArgument
 import com.poufa.app.auth.AuthViewModel
 import com.poufa.app.di.ServiceLocator
 import com.poufa.app.ui.admin.*
+import com.poufa.app.ui.ai.PoufaAiScreen
 import com.poufa.app.ui.auth.LoginScreen
 import com.poufa.app.ui.buildings.*
 import com.poufa.app.ui.closure.*
@@ -104,6 +105,7 @@ fun PoufaApp() {
             composable("sync") { SyncRoute(navController) }
             composable("parametres") { SettingsRoute(navController) }
             composable("aide") { HelpRoute(navController) }
+            composable("poufa_ai") { PoufaAiRoute(navController) }
 
             composable("farm/{farmId}/create") { CreateFarmRoute(navController) }
             composable("farm/{farmId}/receipts") { ReceiptsRoute(navController) }
@@ -693,25 +695,30 @@ private fun MoreRoute(nav: NavHostController) {
         unreadNotifications = unread,
         onProfile = { nav.navigate("profile") },
         onNavigate = { route ->
-            val fid = Session.selectedFarmId ?: return@MoreScreen
             when (route) {
-                "bandes" -> nav.navigate("bandes")
-                "lots" -> nav.navigate("farm/$fid/lots")
-                "sante" -> nav.navigate("farm/$fid/sante")
-                "traitements" -> scope.launch {
-                    ServiceLocator.database.bandDao().observeActiveForFarm(fid).first()?.let {
-                        nav.navigate("band/${it.id}/treatments")
-                    }
-                }
-                "stock_medical" -> nav.navigate("farm/$fid/medical")
-                "ma_ferme" -> nav.navigate("farm/$fid/ma-ferme")
-                "equipe" -> nav.navigate("farm/$fid/equipe")
-                "contacts" -> nav.navigate("farm/$fid/contacts")
+                "poufa_ai" -> nav.navigate("poufa_ai")
                 "notifications" -> nav.navigate("notifications")
                 "rappels" -> nav.navigate("rappels")
                 "sync" -> nav.navigate("sync")
                 "parametres" -> nav.navigate("parametres")
                 "aide" -> nav.navigate("aide")
+                else -> {
+                    val fid = Session.selectedFarmId ?: return@MoreScreen
+                    when (route) {
+                        "bandes" -> nav.navigate("bandes")
+                        "lots" -> nav.navigate("farm/$fid/lots")
+                        "sante" -> nav.navigate("farm/$fid/sante")
+                        "traitements" -> scope.launch {
+                            ServiceLocator.database.bandDao().observeActiveForFarm(fid).first()?.let {
+                                nav.navigate("band/${it.id}/treatments")
+                            }
+                        }
+                        "stock_medical" -> nav.navigate("farm/$fid/medical")
+                        "ma_ferme" -> nav.navigate("farm/$fid/ma-ferme")
+                        "equipe" -> nav.navigate("farm/$fid/equipe")
+                        "contacts" -> nav.navigate("farm/$fid/contacts")
+                    }
+                }
             }
         },
     )
@@ -1534,11 +1541,28 @@ private fun SettingsRoute(nav: NavHostController) {
     val textScale by produceState("normal") {
         value = ServiceLocator.settings.getTextScale() ?: "normal"
     }
+    val themeMode by ServiceLocator.settings.themeMode.collectAsStateWithLifecycle(initialValue = "system")
     SettingsScreen(
         textScale = textScale, language = "Français", weightUnit = "Kilogrammes (kg)",
         dateFormat = "Jour/mois/année", appVersion = "1.0.0",
         onBack = { nav.popBackStack() },
         onTextScale = { scope.launch { ServiceLocator.settings.setTextScale(it) } },
+        themeMode = themeMode,
+        onThemeMode = { scope.launch { ServiceLocator.settings.setThemeMode(it) } },
+    )
+}
+
+@Composable
+private fun PoufaAiRoute(nav: NavHostController) {
+    val farmId = Session.selectedFarmId
+    val farm by ServiceLocator.database.farmDao().let { dao ->
+        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null)
+        else remember { mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null) }
+    }
+    PoufaAiScreen(
+        farmId = farmId,
+        farmLabel = farm?.name,
+        onBack = { nav.popBackStack() },
     )
 }
 

@@ -194,14 +194,28 @@ fun DataSynchronizationScreen(
 /** Écran 56 — Paramètres. */
 @Composable
 fun SettingsScreen(
-    textScale: String, language: String, weightUnit: String, dateFormat: String, appVersion: String,
-    onBack: () -> Unit, onTextScale: (String) -> Unit,
+    textScale: String,
+    language: String,
+    weightUnit: String,
+    dateFormat: String,
+    appVersion: String,
+    onBack: () -> Unit,
+    onTextScale: (String) -> Unit,
+    themeMode: String = "system",
+    onThemeMode: (String) -> Unit = {},
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
         Text("Paramètres", fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Text("Application POUFA", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
+        Text("Apparence", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf("Système" to "system", "Clair (Crème)" to "light", "Sombre" to "dark").forEach { (label, value) ->
+                PoufaSelectionChip(label, themeMode == value) { onThemeMode(value) }
+            }
+        }
+        Spacer(Modifier.height(16.dp))
         Text("Taille du texte", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("Normale" to "normal", "Grande" to "large", "Très grande" to "xlarge").forEach { (label, value) ->

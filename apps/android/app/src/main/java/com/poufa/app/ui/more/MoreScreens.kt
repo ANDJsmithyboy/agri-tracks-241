@@ -140,6 +140,7 @@ fun MoreScreen(
         MoreItem("Contacts utiles", "contacts", Icons.Outlined.Phone),
     )
     val app = listOf(
+        MoreItem("POUFA AI", "poufa_ai", Icons.Outlined.AutoAwesome),
         MoreItem("Notifications", "notifications", Icons.Outlined.Notifications),
         MoreItem("Rappels", "rappels", Icons.Outlined.NotificationsActive),
         MoreItem("Données et synchronisation", "sync", Icons.Outlined.Sync),
