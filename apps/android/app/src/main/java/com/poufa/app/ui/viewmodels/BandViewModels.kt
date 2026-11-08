@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package com.poufa.app.ui.viewmodels
 
 import androidx.lifecycle.SavedStateHandle

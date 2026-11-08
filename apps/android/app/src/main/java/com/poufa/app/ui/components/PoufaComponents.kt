@@ -389,8 +389,10 @@ fun PoufaListRow(
                 Text(subtitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        trailing ?: if (onClick != null) {
+        if (trailing != null) {
+            trailing()
+        } else if (onClick != null) {
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        } else null
+        }
     }
 }

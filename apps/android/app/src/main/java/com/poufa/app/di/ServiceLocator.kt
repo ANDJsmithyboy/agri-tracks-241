@@ -31,7 +31,7 @@ object ServiceLocator {
     val database: PoufaDatabase
         get() = db ?: synchronized(this) {
             db ?: Room.databaseBuilder(ctx(), PoufaDatabase::class.java, "poufa.db")
-                .fallbackToDestructiveMigration() // v1 : recréation autorisée avant release
+                .fallbackToDestructiveMigration(true) // v1 : recréation autorisée avant release
                 .build().also { db = it }
         }
 

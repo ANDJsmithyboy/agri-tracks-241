@@ -83,7 +83,7 @@ class PoufaApiClient(
             .build()
         return withContext(Dispatchers.IO) {
             http.newCall(req).execute().use { resp ->
-                val text = resp.body?.string().orEmpty()
+                val text = resp.body.string()
                 if (!resp.isSuccessful) {
                     val code = runCatching {
                         json.decodeFromString<Map<String, String>>(text)["detail"]

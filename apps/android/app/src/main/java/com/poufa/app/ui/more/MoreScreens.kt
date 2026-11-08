@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.Help
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
@@ -143,7 +144,7 @@ fun MoreScreen(
         MoreItem("Rappels", "rappels", Icons.Outlined.NotificationsActive),
         MoreItem("Données et synchronisation", "sync", Icons.Outlined.Sync),
         MoreItem("Paramètres", "parametres", Icons.Outlined.Settings),
-        MoreItem("Aide", "aide", Icons.Outlined.Help),
+        MoreItem("Aide", "aide", Icons.AutoMirrored.Outlined.Help),
     )
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(PoufaPagePadding), verticalArrangement = Arrangement.spacedBy(20.dp)) {
