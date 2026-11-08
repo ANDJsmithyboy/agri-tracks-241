@@ -55,6 +55,9 @@ class AuthViewModel : ViewModel() {
 
     /** Jeton de session Clerk pour FastAPI — jamais loggé ni persisté. */
     suspend fun sessionToken(): String? = runCatching {
-        Clerk.auth.getToken()?.jwt
+        when (val result = Clerk.auth.getToken()) {
+            is com.clerk.api.network.serialization.ClerkResult.Success -> result.value
+            else -> null
+        }
     }.getOrNull()
 }

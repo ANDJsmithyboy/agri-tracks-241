@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -14,12 +15,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
@@ -442,11 +445,11 @@ private fun BandDetailRoute(nav: NavHostController) {
         when (tab) {
             0 -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 PoufaCard {
-                    PoufaListRow("Effectif présent", trailing = { Text("${s.population ?: "—"} animaux", fontWeight = FontWeight.Bold)) }
+                    PoufaListRow("Effectif présent", trailing = { Text("${s.population ?: "—"} animaux", fontWeight = FontWeight.Bold) })
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    PoufaListRow("Mortalité cumulée", trailing = { Text("${s.cumulativeDeaths}", fontWeight = FontWeight.Bold)) }
+                    PoufaListRow("Mortalité cumulée", trailing = { Text("${s.cumulativeDeaths}", fontWeight = FontWeight.Bold) })
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    PoufaListRow("Jour", trailing = { Text("${s.dayCount}", fontWeight = FontWeight.Bold)) }
+                    PoufaListRow("Jour", trailing = { Text("${s.dayCount}", fontWeight = FontWeight.Bold) })
                 }
                 PoufaPrimaryButton("Saisir une journée", { nav.navigate("farm/${s.band?.farmId}/daily") })
                 PoufaSecondaryButton("Voir les indicateurs techniques", { nav.navigate("band/$bandId/indicators") })
@@ -611,6 +614,7 @@ private fun CloseBandRoute(nav: NavHostController) {
 
 @Composable
 private fun BandSummaryRoute(nav: NavHostController) {
+    val context = LocalContext.current
     val vm: BandDetailViewModel = viewModel { BandDetailViewModel(savedStateHandleOf(nav)) }
     val s by vm.uiState.collectAsStateWithLifecycle()
     val band = s.band ?: run { nav.popBackStack(); return }
@@ -639,7 +643,7 @@ private fun BandSummaryRoute(nav: NavHostController) {
         onDownloadPdf = {
             runCatching {
                 val f = com.poufa.app.data.PdfExport.generateBandReport(
-                    context = nav.context,
+                    context = context,
                     farmName = farm?.name ?: "",
                     bandCode = band.displayCode ?: band.id.take(4),
                     placementDate = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date(band.placementDate)),
@@ -655,8 +659,8 @@ private fun BandSummaryRoute(nav: NavHostController) {
                     lots = s.exits.mapNotNull { it.provisionalLotCode },
                     pendingSync = false,
                 )
-                val uri = androidx.core.content.FileProvider.getUriForFile(nav.context, "${nav.context.packageName}.fileprovider", f)
-                nav.context.startActivity(android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                val uri = androidx.core.content.FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", f)
+                context.startActivity(android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                     type = "application/pdf"
                     putExtra(android.content.Intent.EXTRA_STREAM, uri)
                     addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -673,16 +677,17 @@ private fun farmArg(nav: NavHostController): String? =
 
 @Composable
 private fun MoreRoute(nav: NavHostController) {
+    val scope = rememberCoroutineScope()
     val farmId = Session.selectedFarmId
     val farm by ServiceLocator.database.farmDao().let { dao ->
-        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null) else mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null)
+        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null) else remember { mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null) }
     }
     var unread by remember { mutableStateOf(0) }
-    val user by produceState<String?>(initialValue = null) {
-        value = runCatching { com.clerk.api.Clerk.userFlow.first()?.fullName }.getOrNull()
-    }
+    val clerkUser by com.clerk.api.Clerk.userFlow.collectAsStateWithLifecycle()
+    val userName = clerkUser?.firstName?.takeIf { it.isNotBlank() }
+        ?: clerkUser?.emailAddresses?.firstOrNull()?.emailAddress?.substringBefore("@")
     MoreScreen(
-        userName = user?.substringBefore(" ")?.ifBlank { null } ?: user,
+        userName = userName,
         userRole = "Responsable",
         farmName = farm?.name,
         unreadNotifications = unread,
@@ -693,7 +698,11 @@ private fun MoreRoute(nav: NavHostController) {
                 "bandes" -> nav.navigate("bandes")
                 "lots" -> nav.navigate("farm/$fid/lots")
                 "sante" -> nav.navigate("farm/$fid/sante")
-                "traitements" -> ServiceLocator.database.bandDao().observeActiveForFarm(fid).first()?.let { nav.navigate("band/${it.id}/treatments") }
+                "traitements" -> scope.launch {
+                    ServiceLocator.database.bandDao().observeActiveForFarm(fid).first()?.let {
+                        nav.navigate("band/${it.id}/treatments")
+                    }
+                }
                 "stock_medical" -> nav.navigate("farm/$fid/medical")
                 "ma_ferme" -> nav.navigate("farm/$fid/ma-ferme")
                 "equipe" -> nav.navigate("farm/$fid/equipe")
@@ -712,14 +721,14 @@ private fun MoreRoute(nav: NavHostController) {
 private fun ProfileRoute(nav: NavHostController) {
     val farmId = Session.selectedFarmId
     val farm by ServiceLocator.database.farmDao().let { dao ->
-        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null) else mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null)
+        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null) else remember { mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null) }
     }
-    val user by produceState<com.clerk.api.models.User?>(initialValue = null) {
-        value = runCatching { com.clerk.api.Clerk.userFlow.first() }.getOrNull()
-    }
+    val user by com.clerk.api.Clerk.userFlow.collectAsStateWithLifecycle()
+    val fullName = listOfNotNull(user?.firstName, user?.lastName).joinToString(" ").trim().ifBlank { null }
+    val emailOrPhone = user?.emailAddresses?.firstOrNull()?.emailAddress
     MyProfileScreen(
-        displayName = user?.firstName ?: user?.fullName,
-        phone = user?.primaryPhoneNumber?.phoneNumber,
+        displayName = user?.firstName ?: fullName ?: emailOrPhone?.substringBefore("@"),
+        phone = emailOrPhone,
         role = "Responsable de ferme",
         farmName = farm?.name,
         onBack = { nav.popBackStack() },
@@ -753,6 +762,7 @@ private fun ProfileRoute(nav: NavHostController) {
 
 @Composable
 private fun ContactsRoute(nav: NavHostController) {
+    val context = LocalContext.current
     val farmId = farmArg(nav) ?: return
     val farm by ServiceLocator.database.farmDao().observeById(farmId).collectAsStateWithLifecycle(initialValue = null)
     val roomContacts by ServiceLocator.database.contactDao().observeForFarm(farmId).collectAsStateWithLifecycle(initialValue = emptyList())
@@ -775,7 +785,7 @@ private fun ContactsRoute(nav: NavHostController) {
         onBack = { nav.popBackStack() },
         onCall = { phone ->
             runCatching {
-                nav.context.startActivity(android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.parse("tel:$phone")))
+                context.startActivity(android.content.Intent(android.content.Intent.ACTION_DIAL, android.net.Uri.parse("tel:$phone")))
             }
         },
     )
@@ -827,7 +837,7 @@ private fun LotResultRoute(nav: NavHostController) {
     }
     val band by ServiceLocator.database.bandDao().let { dao ->
         result?.let { dao.observeById(it.bandId).collectAsStateWithLifecycle(initialValue = null) }
-            ?: mutableStateOf<com.poufa.app.data.local.BandEntity?>(null)
+            ?: remember { mutableStateOf<com.poufa.app.data.local.BandEntity?>(null) }
     }
     LotSearchResultScreen(
         query = code, found = result != null, offline = false,
@@ -845,7 +855,7 @@ private fun LotResultRoute(nav: NavHostController) {
 @Composable
 private fun TransferWizardRoute(nav: NavHostController) {
     val farmId = farmArg(nav) ?: return
-    val vm: TransferWizardViewModel = viewModel()
+    val vm: TransferWizardViewModel = viewModel { TransferWizardViewModel(savedStateHandleOf(nav)) }
     LaunchedEffect(farmId) { vm.initFarm(farmId) }
     val s by vm.uiState.collectAsStateWithLifecycle()
 
@@ -864,7 +874,7 @@ private fun TransferWizardRoute(nav: NavHostController) {
         val band = activeBands.firstOrNull { it.id == s.bandId }
         CreateTransferReviewScreen(
             bandLabel = band?.displayCode ?: "Bande", qty = s.qty.toIntOrNull() ?: 0,
-            recipient = s.recipient, provisionalCode = "LOT-${s.draftUuid.take(8).uppercase()}",
+            recipient = s.recipient, provisionalLotCode = "LOT-${s.draftUuid.take(8).uppercase()}",
             onBack = { vm.goToStep(1) },
             onSave = {
                 vm.submitTransfer(band) {
@@ -1045,6 +1055,7 @@ private fun HealthListRoute(nav: NavHostController) {
 
 @Composable
 private fun HealthFormRoute(nav: NavHostController) {
+    val context = LocalContext.current
     val farmId = farmArg(nav) ?: return
     val band by ServiceLocator.database.bandDao().observeActiveForFarm(farmId).collectAsStateWithLifecycle(initialValue = null)
     val b = band ?: run { nav.popBackStack(); return }
@@ -1055,7 +1066,7 @@ private fun HealthFormRoute(nav: NavHostController) {
     ) { uri ->
         if (uri != null) {
             val id = java.util.UUID.randomUUID().toString()
-            com.poufa.app.data.PhotoStore.persist(nav.context, uri, id)?.let { photo ->
+            com.poufa.app.data.PhotoStore.persist(context, uri, id)?.let { photo ->
                 pendingPhotos.add(photo)
             }
         }
@@ -1122,7 +1133,7 @@ private fun HealthDetailRoute(nav: NavHostController) {
     val attachments by ServiceLocator.database.healthAttachmentDao().observeForDeclaration(declId).collectAsStateWithLifecycle(initialValue = emptyList())
     val band by ServiceLocator.database.bandDao().let { dao ->
         decl?.let { dao.observeById(it.bandId).collectAsStateWithLifecycle(initialValue = null) }
-            ?: mutableStateOf<com.poufa.app.data.local.BandEntity?>(null)
+            ?: remember { mutableStateOf<com.poufa.app.data.local.BandEntity?>(null) }
     }
     val d = decl ?: return
     val scope = rememberCoroutineScope()
@@ -1262,15 +1273,16 @@ private fun UsageRoute(nav: NavHostController) {
 
 @Composable
 private fun LabelRoute(nav: NavHostController) {
+    val context = LocalContext.current
     val lotId = savedStateHandleOf(nav).get<String>("lotId") ?: return
     val lot by ServiceLocator.database.lotDao().observeById(lotId).collectAsStateWithLifecycle(initialValue = null)
     val farm by ServiceLocator.database.farmDao().let { dao ->
         lot?.let { dao.observeById(it.farmId).collectAsStateWithLifecycle(initialValue = null) }
-            ?: mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null)
+            ?: remember { mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null) }
     }
     val band by ServiceLocator.database.bandDao().let { dao ->
         lot?.let { dao.observeById(it.bandId).collectAsStateWithLifecycle(initialValue = null) }
-            ?: mutableStateOf<com.poufa.app.data.local.BandEntity?>(null)
+            ?: remember { mutableStateOf<com.poufa.app.data.local.BandEntity?>(null) }
     }
     val l = lot ?: return
     LotLabelPreviewScreen(
@@ -1282,24 +1294,24 @@ private fun LabelRoute(nav: NavHostController) {
         onPrint = {
             runCatching {
                 val f = com.poufa.app.data.PdfExport.generateLotLabel(
-                    nav.context, l.displayCode ?: l.provisionalCode ?: "lot",
+                    context, l.displayCode ?: l.provisionalCode ?: "lot",
                     farm?.name ?: "", band?.displayCode ?: "", l.quantity,
                     java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date(l.transferDate)),
                     1, true,
                 )
-                PoufaPrinter.printPdf(nav.context, f, "Etiquette_${l.displayCode ?: l.id}")
+                PoufaPrinter.printPdf(context, f, "Etiquette_${l.displayCode ?: l.id}")
             }
         },
         onPdf = {
             runCatching {
                 val f = com.poufa.app.data.PdfExport.generateLotLabel(
-                    nav.context, l.displayCode ?: l.provisionalCode ?: "lot",
+                    context, l.displayCode ?: l.provisionalCode ?: "lot",
                     farm?.name ?: "", band?.displayCode ?: "", l.quantity,
                     java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.FRANCE).format(java.util.Date(l.transferDate)),
                     1, true,
                 )
-                val uri = androidx.core.content.FileProvider.getUriForFile(nav.context, "${nav.context.packageName}.fileprovider", f)
-                nav.context.startActivity(android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                val uri = androidx.core.content.FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", f)
+                context.startActivity(android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                     type = "application/pdf"; putExtra(android.content.Intent.EXTRA_STREAM, uri); addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 })
             }
@@ -1468,9 +1480,10 @@ private fun RemindersRoute(nav: NavHostController) {
 
 @Composable
 private fun NotificationsRoute(nav: NavHostController) {
+    val scope = rememberCoroutineScope()
     val farmId = Session.selectedFarmId
     val farm by ServiceLocator.database.farmDao().let { dao ->
-        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null) else mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null)
+        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null) else remember { mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null) }
     }
     val notifs by ServiceLocator.database.appNotificationDao()
         .observeForUser(Session.userId ?: "").collectAsStateWithLifecycle(initialValue = emptyList())
@@ -1481,32 +1494,33 @@ private fun NotificationsRoute(nav: NavHostController) {
         today = today.map { AppNotification(it.id, it.title, it.message, !it.isRead, it.eventType) },
         week = week.map { AppNotification(it.id, it.title, it.message, !it.isRead, it.eventType) },
         onBack = { nav.popBackStack() },
-        onOpen = { id -> runCatching { ServiceLocator.database.appNotificationDao().markRead(id) } },
+        onOpen = { id -> scope.launch { runCatching { ServiceLocator.database.appNotificationDao().markRead(id) } } },
     )
 }
 
 @Composable
 private fun SyncRoute(nav: NavHostController) {
+    val context = LocalContext.current
     val farmId = Session.selectedFarmId
     val farm by ServiceLocator.database.farmDao().let { dao ->
-        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null) else mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null)
+        if (farmId != null) dao.observeById(farmId).collectAsStateWithLifecycle(initialValue = null) else remember { mutableStateOf<com.poufa.app.data.local.FarmEntity?>(null) }
     }
     val pending by ServiceLocator.database.pendingOperationDao().observeAllPending()
         .collectAsStateWithLifecycle(initialValue = emptyList())
     val wifiOnly by ServiceLocator.settings.wifiOnlySync.collectAsStateWithLifecycle(initialValue = false)
     val scope = rememberCoroutineScope()
     val netState by ServiceLocator.connectivity.state.collectAsStateWithLifecycle()
-    val dbFile = remember { nav.context.getDatabasePath("poufa.db") }
-    val storageMb = remember { (dbFile?.length() ?: 0) / 1_048_576 }
-    val photosDir = remember { java.io.File(nav.context.filesDir, "photos") }
-    val photosMb = remember { (photosDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }) / 1_048_576 }
+    val dbFile = remember(context) { context.getDatabasePath("poufa.db") }
+    val storageMb = remember(dbFile) { (dbFile?.length() ?: 0) / 1_048_576 }
+    val photosDir = remember(context) { java.io.File(context.filesDir, "photos") }
+    val photosMb = remember(photosDir) { (photosDir.walkTopDown().filter { it.isFile }.sumOf { it.length() }) / 1_048_576 }
     val lastSync by ServiceLocator.database.syncCursorDao().observe(Session.userId ?: "")
         .collectAsStateWithLifecycle(initialValue = null)
     DataSynchronizationScreen(
         farmName = farm?.name ?: "",
         isOnline = netState == com.poufa.app.data.NetState.ONLINE,
         lastSyncLabel = lastSync?.lastConfirmedSyncAt?.let { java.text.SimpleDateFormat("dd/MM à HH:mm", java.util.Locale.FRANCE).format(java.util.Date(it)) } ?: "Jamais",
-        pending = pending.map { PendingOpRow(it.entityType, it.entityId.take(8)) },
+        pending = pending.map { PendingOpRow(it.entityType, (it.entityId ?: it.opId).take(8)) },
         wifiOnly = wifiOnly, storageLabel = "${storageMb + photosMb} Mo",
         onBack = { nav.popBackStack() },
         onWifiOnly = { scope.launch { ServiceLocator.settings.setWifiOnlySync(it) } },

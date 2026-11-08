@@ -3,7 +3,10 @@ package com.poufa.app.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.clerk.api.Clerk
-import com.clerk.api.models.OAuthProvider
+import com.clerk.api.network.serialization.ClerkResult
+import com.clerk.api.network.serialization.onFailure
+import com.clerk.api.network.serialization.onSuccess
+import com.clerk.api.sso.OAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +23,7 @@ sealed interface SignInUiState {
 /**
  * Auth POUFA — Clerk Free : Google OAuth + email/mot de passe.
  * Aucun OTP, aucun SMS. API : signInWithOAuth(OAuthProvider.GOOGLE),
- * signInWithPassword { identifier; password }, signUpWithPassword.
+ * signInWithPassword { identifier; password }, signUp { email; password }.
  */
 class SignInViewModel : ViewModel() {
 
@@ -32,12 +35,13 @@ class SignInViewModel : ViewModel() {
         _state.value = SignInUiState.GoogleLoading
         viewModelScope.launch {
             _state.value = runCatching {
-                val result = Clerk.auth.signInWithOAuth(OAuthProvider.GOOGLE)
-                result.onFailure { throw it }
-            }.fold(
-                onSuccess = { SignInUiState.Done },
-                onFailure = { SignInUiState.Error(it.message ?: "Connexion Google impossible") },
-            )
+                when (val result = Clerk.auth.signInWithOAuth(OAuthProvider.GOOGLE)) {
+                    is ClerkResult.Success -> SignInUiState.Done
+                    is ClerkResult.Failure -> SignInUiState.Error("Connexion Google impossible")
+                }
+            }.getOrElse {
+                SignInUiState.Error(it.message ?: "Connexion Google impossible")
+            }
         }
     }
 
@@ -51,23 +55,32 @@ class SignInViewModel : ViewModel() {
         viewModelScope.launch {
             _state.value = runCatching {
                 if (signUp) {
-                    val result = Clerk.auth.signUpWithPassword {
+                    val parts = name?.trim()?.split(" ", limit = 2).orEmpty()
+                    val first = parts.getOrNull(0)?.takeIf { it.isNotBlank() }
+                    val last = parts.getOrNull(1)?.takeIf { it.isNotBlank() }
+                    val result = Clerk.auth.signUp {
                         this.email = email.trim()
                         this.password = password
-                        name?.let { this.name = it }
+                        if (first != null) this.firstName = first
+                        if (last != null) this.lastName = last
                     }
-                    result.onFailure { throw it }
+                    when (result) {
+                        is ClerkResult.Success -> SignInUiState.Done
+                        is ClerkResult.Failure -> SignInUiState.Error("Échec de la création du compte")
+                    }
                 } else {
                     val result = Clerk.auth.signInWithPassword {
                         identifier = email.trim()
                         this.password = password
                     }
-                    result.onFailure { throw it }
+                    when (result) {
+                        is ClerkResult.Success -> SignInUiState.Done
+                        is ClerkResult.Failure -> SignInUiState.Error("Identifiants incorrects")
+                    }
                 }
-            }.fold(
-                onSuccess = { SignInUiState.Done },
-                onFailure = { SignInUiState.Error(it.message ?: "Échec de l'authentification") },
-            )
+            }.getOrElse {
+                SignInUiState.Error(it.message ?: "Échec de l'authentification")
+            }
         }
     }
 }

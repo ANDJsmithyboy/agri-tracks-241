@@ -42,7 +42,12 @@ object ServiceLocator {
         PoufaApiClient(
             baseUrl = BuildConfig.API_BASE_URL,
             tokenProvider = TokenProvider {
-                runCatching { com.clerk.api.Clerk.auth.getToken()?.jwt }.getOrNull()
+                runCatching {
+                    when (val result = com.clerk.api.Clerk.auth.getToken()) {
+                        is com.clerk.api.network.serialization.ClerkResult.Success -> result.value
+                        else -> null
+                    }
+                }.getOrNull()
             },
         )
     }

@@ -78,12 +78,19 @@ fun PoufaSecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    icon: ImageVector? = null,
 ) {
     OutlinedButton(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier.fillMaxWidth().height(PoufaButtonHeight),
         shape = RoundedCornerShape(PoufaRadiusButton),
     ) {
+        if (icon != null) {
+            Icon(icon, null, Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+        }
         Text(text, fontWeight = FontWeight.SemiBold)
     }
 }
@@ -165,6 +172,7 @@ fun PoufaBottomActionBar(
     primaryText: String,
     onPrimary: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     hint: String? = null,
     secondary: (@Composable () -> Unit)? = null,
 ) {
@@ -182,7 +190,7 @@ fun PoufaBottomActionBar(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
-            PoufaPrimaryButton(primaryText, onPrimary)
+            PoufaPrimaryButton(primaryText, onPrimary, enabled = enabled)
             secondary?.invoke()
         }
     }

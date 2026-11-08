@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -134,7 +135,7 @@ fun LotLabelPreviewScreen(
             Box(Modifier.fillMaxWidth().height(200.dp).clip(RoundedCornerShape(16.dp)).background(PoufaNeutralSelected), contentAlignment = Alignment.Center) {
                 Row(Modifier.padding(16.dp).fillMaxWidth().height(140.dp).clip(RoundedCornerShape(8.dp)).background(Color.White).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     qrBitmap?.let { bmp ->
-                        androidx.compose.foundation.Image(androidx.compose.ui.graphics.asImageBitmap(bmp), "QR $lotCode", Modifier.size(96.dp))
+                        androidx.compose.foundation.Image(bmp.asImageBitmap(), "QR $lotCode", Modifier.size(96.dp))
                     } ?: Box(Modifier.size(96.dp).background(PoufaSoftGreen), contentAlignment = Alignment.Center) {
                         Icon(Icons.Filled.QrCode, null, tint = PoufaPrimary)
                     }

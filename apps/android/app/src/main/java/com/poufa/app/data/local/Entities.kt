@@ -62,7 +62,7 @@ data class BuildingEntity(
 @Entity(tableName = "band", indices = [Index("farmId"), Index("status")])
 data class BandEntity(
     @PrimaryKey val id: String,
-    val displayCode: String?,
+    val displayCode: String? = null,
     val farmId: String,
     val buildingId: String?,
     val status: String = "active",            // active|closed
@@ -74,8 +74,8 @@ data class BandEntity(
     val origin: String? = null,
     val hatcheryLot: String? = null,
     val initialFeedProductId: String? = null,
-    val strain: String?,
-    val ageAtReceptionDays: Int?,
+    val strain: String? = null,
+    val ageAtReceptionDays: Int? = null,
     val closedAt: Long? = null,
     val serverRevision: Long = 0,
     val localRevision: Long = 0,
@@ -91,7 +91,7 @@ data class DailyRecordEntity(
     val recordDate: Long,                      // epoch jour (yyyyMMdd ou millis)
     val mortality: Int?,
     val feedKg: Double?,
-    val avgWeightKg: Double?,
+    val avgWeightKg: Double? = null,
     val notes: String?,
     val authorId: String?,
     val status: String = "pending",            // pending|synced|conflict
@@ -184,7 +184,7 @@ data class PendingOperationEntity(
     val clientTs: Long,
     val schemaVersion: Int = 1,
     val attempts: Int = 0,
-    val lastError: String?,
+    val lastError: String? = null,
     val status: String = "pending",            // pending|sending|failed|acked
     val createdAt: Long,
 )
@@ -262,7 +262,7 @@ data class InventoryReceiptEntity(
     val receiptDate: Long,
     val deliveryRef: String?,
     val status: String = "pending",            // pending|confirmed
-    val movementId: String?,
+    val movementId: String? = null,
     val createdAt: Long,
     val syncedAt: Long? = null,
 )
@@ -304,7 +304,7 @@ data class FarmMemberEntity(
     val role: String,                          // manager|worker
     val permissions: String?,
     val status: String = "active",             // active|pending|revoked
-    val invitedAt: Long?,
+    val invitedAt: Long? = null,
     val createdAt: Long,
 )
 

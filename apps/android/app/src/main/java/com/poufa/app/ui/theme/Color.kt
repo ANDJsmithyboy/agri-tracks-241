@@ -16,6 +16,7 @@ val PoufaWarningAccent = Color(0xFFE5BC55) // jaune accent
 val PoufaSecondaryText = Color(0xFF5E6963)
 val PoufaBorder = Color(0xFFC9D0CB)      // bordure input
 val PoufaBrandGold = Color(0xFFE5BC55)   // carré or après le wordmark
+val PoufaGold = PoufaBrandGold
 
 // Sémantiques dérivées du système POUFA (accessibilité testée)
 val PoufaSuccess = Color(0xFF1E7A4C)

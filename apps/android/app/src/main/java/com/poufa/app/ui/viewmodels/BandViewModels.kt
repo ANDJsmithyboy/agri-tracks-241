@@ -47,11 +47,11 @@ class FarmerHomeViewModel(private val handle: SavedStateHandle) : ViewModel() {
             farmName = q.farm?.name, band = q.band, population = q.pop,
             latestWeighingAvgKg = q.weighing?.averageWeightKg,
             pendingCount = q.pending, loading = false,
-            dayCount = q.b?.let { ((System.currentTimeMillis() - it.placementDate) / 86_400_000).toInt().coerceAtLeast(0) } ?: 0,
+            dayCount = q.band?.let { ((System.currentTimeMillis() - it.placementDate) / 86_400_000).toInt().coerceAtLeast(0) } ?: 0,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FarmerHomeUiState())
 
-    private data class Quad(val f: FarmEntity?, val b: BandEntity?, val p: Int?, val w: WeighingEntity?, val pending: Int)
+    private data class Quad(val farm: FarmEntity?, val band: BandEntity?, val pop: Int?, val weighing: WeighingEntity?, val pending: Int)
 }
 
 /** État fiche bande — onglets Suivi/Pesées/Sorties + indicateurs. */
@@ -64,6 +64,8 @@ data class BandDetailUiState(
     val weighings: List<WeighingEntity> = emptyList(),
     val exits: List<FlockExitEntity> = emptyList(),
     val treatments: List<TreatmentEventEntity> = emptyList(),
+    val history: List<DailyRecordEntity> = emptyList(),
+    val latestWeighing: WeighingEntity? = null,
     val loading: Boolean = true,
 )
 
@@ -89,7 +91,9 @@ class BandDetailViewModel(private val handle: SavedStateHandle) : ViewModel() {
                         band = band, farmName = f?.name, population = pop,
                         cumulativeDeaths = recs.sumOf { it.mortality ?: 0 },
                         dayCount = ((System.currentTimeMillis() - band.placementDate) / 86_400_000).toInt(),
-                        weighings = w, exits = e, treatments = t, loading = false,
+                        weighings = w, exits = e, treatments = t,
+                        history = recs, latestWeighing = w.firstOrNull(),
+                        loading = false,
                     )
                 }
             }

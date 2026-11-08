@@ -251,7 +251,7 @@ class ProductionRepository(private val db: PoufaDatabase) {
 
     private fun outbox(
         entityType: String, entityId: String, userId: String?,
-        payload: JSONObject.() -> JSONObject,
+        payload: JSONObject.() -> Unit,
     ) = PendingOperationEntity(
         opId = UUID.randomUUID().toString(),
         userId = userId ?: "",
@@ -260,6 +260,7 @@ class ProductionRepository(private val db: PoufaDatabase) {
         entityId = entityId,
         payloadJson = JSONObject().apply(payload).toString(),
         clientTs = System.currentTimeMillis(),
+        lastError = null,
         createdAt = System.currentTimeMillis(),
     )
 }
