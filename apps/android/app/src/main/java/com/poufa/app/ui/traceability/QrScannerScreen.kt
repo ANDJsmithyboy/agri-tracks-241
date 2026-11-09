@@ -360,3 +360,4 @@ private fun normalizeLotCode(raw: String): String {
         else -> trimmed
     }
 }
+

@@ -1154,7 +1154,6 @@ private fun HealthFormRoute(nav: NavHostController) {
                 nav.popBackStack()
             }
         },
-        onAddPhoto = { photoPicker.launch("image/*") },
     )
 }
 
