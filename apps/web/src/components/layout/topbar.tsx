@@ -43,10 +43,11 @@ export function Topbar() {
     <>
       <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} />
       <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 sm:px-5">
-        {/* ── Left Region: Persistent Toggle + Breadcrumb ── */}
+        {/* ── Left Region: Mobile Trigger + Breadcrumb (Desktop toggle is inside sidebar) ── */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <PoufaSidebarToggle />
-          <div className="h-4 w-px bg-border/80 hidden sm:block" aria-hidden />
+          <div className="md:hidden">
+            <PoufaSidebarToggle />
+          </div>
           <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs sm:text-sm font-medium">
             <Link
               href="/tableau-de-bord"

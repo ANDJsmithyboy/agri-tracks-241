@@ -55,17 +55,24 @@ export function SidebarProvider({
   const [isMobile, setIsMobile] = React.useState(false);
   const [openMobile, setOpenMobile] = React.useState(false);
 
-  // Uncontrolled state backed by query param / cookie / localStorage
-  const [_open, _setOpen] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("sidebar") === "closed") return false;
-      if (params.get("sidebar") === "open") return true;
-      const stored = window.localStorage.getItem(SIDEBAR_COOKIE_NAME);
-      if (stored !== null) return stored === "true";
+  // Uncontrolled state initialized identically on SSR & client to prevent hydration mismatch
+  const [_open, _setOpen] = React.useState(defaultOpen);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("sidebar") === "closed") {
+      _setOpen(false);
+      return;
     }
-    return defaultOpen;
-  });
+    if (params.get("sidebar") === "open") {
+      _setOpen(true);
+      return;
+    }
+    const stored = window.localStorage.getItem(SIDEBAR_COOKIE_NAME);
+    if (stored !== null) {
+      _setOpen(stored === "true");
+    }
+  }, []);
 
   // Query parameter theme override for visual verification / capture
   React.useEffect(() => {
@@ -161,7 +168,7 @@ export function SidebarProvider({
           } as React.CSSProperties
         }
         className={cn(
-          "group/sidebar-wrapper has-[[data-variant=inset]]:bg-sidebar flex min-h-svh w-full",
+          "group/sidebar-wrapper flex min-h-svh w-full bg-background",
           className
         )}
         {...props}
@@ -175,13 +182,13 @@ export function SidebarProvider({
 export interface SidebarProps extends React.ComponentProps<"div"> {
   side?: "left" | "right";
   variant?: "sidebar" | "floating" | "inset";
-  collapsible?: "offcanvas" | "icon" | "none";
+  collapsible?: "icon" | "offcanvas" | "none";
 }
 
 export function Sidebar({
   side = "left",
   variant = "sidebar",
-  collapsible = "offcanvas",
+  collapsible = "icon",
   className,
   children,
   ...props
@@ -220,16 +227,18 @@ export function Sidebar({
     );
   }
 
-  // Desktop offcanvas / icon mode
+  const isCollapsed = state === "collapsed";
+
+  // Desktop icon rail mode (when collapsed, width is 64px (w-16) and all icons remain visible!)
   return (
     <aside
       className={cn(
-        "group peer hidden md:block text-sidebar-foreground transition-[width] duration-200 ease-out",
-        state === "collapsed" && collapsible === "offcanvas" ? "w-0 overflow-hidden" : "w-[var(--sidebar-width)]",
+        "group peer hidden md:block text-sidebar-foreground transition-[width] duration-200 ease-out shrink-0",
+        isCollapsed ? "w-16" : "w-[var(--sidebar-width)]",
         className
       )}
       data-state={state}
-      data-collapsible={state === "collapsed" ? collapsible : ""}
+      data-collapsible={isCollapsed ? collapsible : ""}
       data-variant={variant}
       data-side={side}
     >
@@ -237,21 +246,15 @@ export function Sidebar({
       <div
         className={cn(
           "duration-200 relative h-svh bg-transparent transition-[width] ease-out",
-          state === "collapsed" && collapsible === "offcanvas" ? "w-0" : "w-[var(--sidebar-width)]"
+          isCollapsed ? "w-16" : "w-[var(--sidebar-width)]"
         )}
       />
       {/* Fixed sidebar content */}
       <div
         className={cn(
-          "duration-200 fixed inset-y-0 z-20 hidden h-svh transition-[left,right,width] ease-out md:flex md:flex-col",
-          side === "left"
-            ? state === "collapsed" && collapsible === "offcanvas"
-              ? "left-[calc(var(--sidebar-width)*-1)]"
-              : "left-0"
-            : state === "collapsed" && collapsible === "offcanvas"
-            ? "right-[calc(var(--sidebar-width)*-1)]"
-            : "right-0",
-          "w-[var(--sidebar-width)] border-r border-sidebar-border bg-sidebar"
+          "duration-200 fixed inset-y-0 z-20 hidden h-svh transition-[width] ease-out md:flex md:flex-col",
+          isCollapsed ? "w-16" : "w-[var(--sidebar-width)]",
+          "border-r border-sidebar-border bg-sidebar"
         )}
         {...props}
       >
@@ -263,36 +266,11 @@ export function Sidebar({
   );
 }
 
-export function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
-
-  return (
-    <Button
-      data-sidebar="trigger"
-      variant="ghost"
-      size="icon"
-      className={cn("size-8", className)}
-      onClick={(event) => {
-        onClick?.(event);
-        toggleSidebar();
-      }}
-      {...props}
-    >
-      <PanelLeft className="size-4" />
-      <span className="sr-only">Basculer le panneau de navigation</span>
-    </Button>
-  );
-}
-
 export function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
   return (
     <main
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background transition-[margin] duration-200 ease-out",
+        "relative flex min-h-svh flex-1 flex-col bg-background transition-[margin] duration-200 ease-out min-w-0",
         className
       )}
       {...props}
@@ -304,7 +282,7 @@ export function SidebarHeader({ className, ...props }: React.ComponentProps<"div
   return (
     <div
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-3", className)}
+      className={cn("flex flex-col gap-2 p-3 shrink-0", className)}
       {...props}
     />
   );
@@ -314,7 +292,7 @@ export function SidebarFooter({ className, ...props }: React.ComponentProps<"div
   return (
     <div
       data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-3", className)}
+      className={cn("flex flex-col gap-2 p-3 shrink-0", className)}
       {...props}
     />
   );
@@ -325,7 +303,7 @@ export function SidebarContent({ className, ...props }: React.ComponentProps<"di
     <div
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto",
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden",
         className
       )}
       {...props}

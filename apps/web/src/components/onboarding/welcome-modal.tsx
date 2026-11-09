@@ -39,8 +39,12 @@ export function WelcomeModal() {
     const handleManualOpen = () => setOpen(true);
     window.addEventListener("open-poufa-welcome", handleManualOpen);
 
-    // Vérifie si l'utilisateur a déjà vu la visite
+    // Vérifie si l'utilisateur a déjà vu la visite ou si l'aperçu désactive le modal
     try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("nowelcome") === "1" || params.get("nowelcome") === "true") {
+        return;
+      }
       const seen = window.localStorage.getItem(WELCOME_STORAGE_KEY);
       if (!seen) {
         // Petit délai pour laisser l'interface se stabiliser
