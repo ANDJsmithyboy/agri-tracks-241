@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
+import { frFR } from "@clerk/localizations";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
@@ -41,8 +42,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <ClerkProvider>
+      <body className="min-h-full flex flex-col font-sans">
+        <ClerkProvider localization={frFR}>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

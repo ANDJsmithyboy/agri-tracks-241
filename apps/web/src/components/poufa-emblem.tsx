@@ -7,9 +7,12 @@ export function PoufaEmblem({ className }: { className?: string }) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 256 256"
+      width="36"
+      height="36"
       fill="none"
       role="img"
       aria-label="Emblème POUFA"
+      style={{ maxWidth: "100%", maxHeight: "100%", flexShrink: 0 }}
       className={cn("size-9 shrink-0", className)}
     >
       <path

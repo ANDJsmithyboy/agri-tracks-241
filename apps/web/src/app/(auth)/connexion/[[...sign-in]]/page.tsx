@@ -1,32 +1,218 @@
+import Image from "next/image";
+import Link from "next/link";
 import { SignIn } from "@clerk/nextjs";
-import { PoufaLogo } from "@/components/poufa-logo";
+import { CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+const clerkAppearance = {
+  elements: {
+    rootBox: "w-full",
+    card: "w-full shadow-none border border-border bg-card rounded-2xl p-6 sm:p-7",
+    headerTitle: "text-foreground font-semibold text-lg tracking-tight",
+    headerSubtitle: "text-muted-foreground text-xs leading-relaxed",
+    socialButtonsBlockButton:
+      "border border-border bg-background hover:bg-secondary/60 text-foreground text-sm font-medium h-11 rounded-xl transition-colors",
+    socialButtonsBlockButtonText: "font-medium text-foreground text-sm",
+    dividerRow: "my-4",
+    dividerLine: "bg-border",
+    dividerText: "text-muted-foreground text-xs uppercase tracking-wider",
+    formFieldLabel: "text-foreground text-xs font-medium mb-1.5",
+    formFieldInput:
+      "h-11 rounded-xl border border-input bg-background text-foreground text-sm px-3.5 focus:border-ring focus:ring-1 focus:ring-ring transition-colors",
+    formButtonPrimary:
+      "h-11 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity shadow-xs",
+    footerActionText: "text-muted-foreground text-xs",
+    footerActionLink: "text-primary font-semibold text-xs hover:underline",
+    identityPreviewText: "text-foreground text-sm font-medium",
+    identityPreviewEditButton: "text-primary text-xs hover:underline",
+    formFieldAction: "text-primary text-xs hover:underline",
+  },
+  layout: {
+    socialButtonsPlacement: "top" as const,
+    logoPlacement: "none" as const,
+  },
+};
 
 export default function ConnexionPage() {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <PoufaLogo />
-          <Badge variant="secondary">Système national — Gabon</Badge>
+    <div className="min-h-dvh w-full bg-background grid lg:grid-cols-12 overflow-x-hidden">
+      {/* ── Left Column: Brand Showcase (Desktop only) ── */}
+      <aside className="hidden lg:flex lg:col-span-5 xl:col-span-5 flex-col justify-between p-10 xl:p-14 bg-secondary/35 border-r border-border relative">
+        {/* Top: Logo & Identity */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div
+              className="relative shrink-0 overflow-hidden rounded-xl border border-border/80 bg-card p-2 shadow-xs"
+              style={{
+                width: "56px",
+                height: "56px",
+                maxWidth: "56px",
+                maxHeight: "56px",
+                flexShrink: 0,
+              }}
+            >
+              <Image
+                src="/branding/poufa-symbol.svg"
+                alt="Logo officiel POUFA"
+                width={56}
+                height={56}
+                priority
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
+            </div>
+            <div>
+              <span className="font-mono text-2xl font-black tracking-tight text-foreground block">
+                POUFA
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Plateforme Avicole Nationale
+              </span>
+            </div>
+          </div>
+
+          <Badge variant="outline" className="text-[11px] font-medium">
+            Programme National KIMBA 2026 · Gabon
+          </Badge>
         </div>
 
-        <div className="flex justify-center rounded-xl border border-border bg-card p-6 shadow-sm">
-          <SignIn
-            path="/connexion"
-            routing="path"
-            signUpUrl="/inscription"
-            fallbackRedirectUrl="/tableau-de-bord"
-            signUpFallbackRedirectUrl="/tableau-de-bord"
-          />
+        {/* Center: Editorial Value Proposition */}
+        <div className="space-y-6 max-w-md my-auto py-12">
+          <div className="space-y-2">
+            <h2 className="font-serif text-3xl xl:text-4xl font-normal tracking-tight text-foreground leading-[1.15]">
+              Une nouvelle vision du suivi avicole.
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Production, suivi sanitaire et traçabilité dans un même espace.
+            </p>
+          </div>
+
+          <div className="space-y-3.5 pt-2 text-xs text-muted-foreground">
+            <div className="flex items-start gap-2.5">
+              <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-foreground font-semibold">
+                  Pilotage zootechnique en direct :
+                </strong>{" "}
+                relevés quotidiens, pesées d&apos;échantillon et courbes de
+                croissance.
+              </span>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <ShieldCheck className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-foreground font-semibold">
+                  Traçabilité sanitaire certifiée :
+                </strong>{" "}
+                lots horodatés avec code QR vérifiable de l&apos;élevage à
+                l&apos;abattoir.
+              </span>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <Sparkles className="size-4 text-primary shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-foreground font-semibold">
+                  POUFA AI intégrée :
+                </strong>{" "}
+                analyse intelligente de vos indicateurs zootechniques et alertes
+                précoces.
+              </span>
+            </div>
+          </div>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground">
-          Accès réservé aux comptes autorisés. Mot de passe oublié : contactez
-          votre administrateur POUFA.
-        </p>
-      </div>
+        {/* Bottom: Institutional Footer */}
+        <div className="pt-6 border-t border-border/80 text-[11px] text-muted-foreground space-y-1">
+          <p className="font-semibold text-foreground">
+            SmartANDJ AI Technologies
+          </p>
+          <p>
+            République Gabonaise · Ministère de l&apos;Agriculture et de
+            l&apos;Élevage
+          </p>
+        </div>
+      </aside>
+
+      {/* ── Right Column: Clerk Sign-In Form ── */}
+      <main className="lg:col-span-7 xl:col-span-7 flex flex-col items-center justify-center p-4 sm:p-8 lg:p-12 min-h-dvh">
+        <div className="w-full max-w-[420px] space-y-6">
+          {/* Mobile-only Header */}
+          <div className="flex flex-col items-center text-center gap-3 lg:hidden pt-4">
+            <div
+              className="relative shrink-0 overflow-hidden rounded-xl border border-border bg-card p-2 shadow-xs"
+              style={{
+                width: "48px",
+                height: "48px",
+                maxWidth: "48px",
+                maxHeight: "48px",
+                flexShrink: 0,
+              }}
+            >
+              <Image
+                src="/branding/poufa-symbol.svg"
+                alt="Logo officiel POUFA"
+                width={48}
+                height={48}
+                priority
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
+            </div>
+            <div>
+              <span className="font-mono text-2xl font-black tracking-tight text-foreground block">
+                POUFA
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Suivi technico-économique & traçabilité
+              </span>
+            </div>
+          </div>
+
+          {/* Form Header */}
+          <div className="text-center lg:text-left space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Bienvenue sur POUFA
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Connectez-vous pour accéder à votre espace de suivi.
+            </p>
+          </div>
+
+          {/* Clerk Component with Native Custom Theme */}
+          <div className="w-full flex justify-center">
+            <SignIn
+              path="/connexion"
+              routing="path"
+              signUpUrl="/inscription"
+              fallbackRedirectUrl="/tableau-de-bord"
+              signUpFallbackRedirectUrl="/tableau-de-bord"
+              appearance={clerkAppearance}
+            />
+          </div>
+
+          {/* Discreet Footer */}
+          <div className="text-center space-y-2 pt-2">
+            <p className="text-[11px] text-muted-foreground">
+              Accès réservé aux exploitants et acteurs de la filière autorisés.
+            </p>
+            <div className="flex items-center justify-center gap-4 text-[11px] text-muted-foreground/80">
+              <Link href="/telecharger" className="hover:underline">
+                Application mobile Android
+              </Link>
+              <span>·</span>
+              <span>KIMBA 2026</span>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
-
