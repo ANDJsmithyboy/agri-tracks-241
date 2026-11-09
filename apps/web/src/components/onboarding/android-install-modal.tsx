@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import {
-  CheckCircle2,
   Download,
   ExternalLink,
-  Info,
-  QrCode,
   ShieldCheck,
   Smartphone,
   WifiOff,
@@ -23,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { POUFA_ANDROID_RELEASE } from "@/lib/android-release";
 
 interface AndroidInstallModalProps {
   open: boolean;
@@ -40,10 +37,10 @@ export function AndroidInstallModal({
           <div className="flex items-center gap-2">
             <PoufaEmblem className="size-6" />
             <Badge variant="outline" className="font-mono text-xs">
-              Cloudflare R2 Direct
+              GitHub Release
             </Badge>
             <Badge variant="brand" className="text-xs">
-              0.1.0-kimba
+              {POUFA_ANDROID_RELEASE.version}
             </Badge>
           </div>
           <DialogTitle className="text-xl font-semibold tracking-tight">
@@ -51,7 +48,7 @@ export function AndroidInstallModal({
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
             Application 100% native Kotlin conçue pour les éleveurs en poulailler :
-            téléchargement direct sécurisé depuis Cloudflare R2, sans inscription requise.
+            téléchargement direct du binaire APK officiel, sans inscription préalable.
           </DialogDescription>
         </DialogHeader>
 
@@ -59,26 +56,21 @@ export function AndroidInstallModal({
           {/* QR Code Card */}
           <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-muted/30 p-4 text-center sm:col-span-2">
             <div className="relative rounded-lg border border-border bg-white p-3 shadow-xs">
-              {/* QR Code SVG représentatif */}
               <svg
                 viewBox="0 0 140 140"
                 className="size-36 text-[#28251F]"
                 fill="currentColor"
                 aria-label="QR Code de téléchargement POUFA Android"
               >
-                {/* Top-left position pattern */}
                 <rect x="10" y="10" width="35" height="35" rx="4" fill="currentColor" />
                 <rect x="16" y="16" width="23" height="23" rx="2" fill="#FFFFFF" />
                 <rect x="22" y="22" width="11" height="11" rx="1" fill="currentColor" />
-                {/* Top-right position pattern */}
                 <rect x="95" y="10" width="35" height="35" rx="4" fill="currentColor" />
                 <rect x="101" y="16" width="23" height="23" rx="2" fill="#FFFFFF" />
                 <rect x="107" y="22" width="11" height="11" rx="1" fill="currentColor" />
-                {/* Bottom-left position pattern */}
                 <rect x="10" y="95" width="35" height="35" rx="4" fill="currentColor" />
                 <rect x="16" y="101" width="23" height="23" rx="2" fill="#FFFFFF" />
                 <rect x="22" y="107" width="11" height="11" rx="1" fill="currentColor" />
-                {/* Data modules */}
                 <rect x="52" y="12" width="6" height="6" rx="1" />
                 <rect x="64" y="12" width="6" height="6" rx="1" />
                 <rect x="76" y="12" width="6" height="6" rx="1" />
@@ -112,7 +104,7 @@ export function AndroidInstallModal({
               Scannez avec votre téléphone
             </p>
             <p className="text-[10px] text-muted-foreground">
-              Appareil photo ou Google Lens
+              Téléchargement direct immédiat
             </p>
           </div>
 
@@ -121,21 +113,21 @@ export function AndroidInstallModal({
             <div className="rounded-lg border border-border bg-card p-3 text-xs space-y-2">
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Version</span>
-                <span className="font-mono font-medium text-foreground">0.1.0-kimba-demo</span>
+                <span className="font-mono font-medium text-foreground">{POUFA_ANDROID_RELEASE.version}</span>
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Taille du paquet</span>
-                <span className="font-mono font-medium text-foreground">26.55 Mo</span>
+                <span className="font-mono font-medium text-foreground">{POUFA_ANDROID_RELEASE.sizeLabel}</span>
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Compatibilité</span>
-                <span className="font-medium text-foreground">Android 8.0+ (API 26)</span>
+                <span className="font-medium text-foreground">{POUFA_ANDROID_RELEASE.minAndroid}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Mode hors-ligne</span>
                 <span className="inline-flex items-center gap-1 font-medium text-[var(--brand-green)] dark:text-[var(--brand-neon)]">
                   <WifiOff className="size-3" />
-                  Room + Outbox
+                  Room SQLite + Outbox
                 </span>
               </div>
             </div>
@@ -155,7 +147,7 @@ export function AndroidInstallModal({
                   2
                 </span>
                 <p className="text-muted-foreground">
-                  <strong className="text-foreground">Autorisez l&apos;installation</strong> depuis votre navigateur ou gestionnaire de fichiers.
+                  <strong className="text-foreground">Autorisez l&apos;installation</strong> depuis votre navigateur Chrome si demandé.
                 </p>
               </div>
               <div className="flex items-start gap-2">
@@ -192,7 +184,7 @@ export function AndroidInstallModal({
               asChild
               className="gap-2"
             >
-              <a href="/telecharger/android">
+              <a href={POUFA_ANDROID_RELEASE.url}>
                 <Download className="size-4" aria-hidden />
                 <span>Télécharger pour Android</span>
               </a>
@@ -203,4 +195,3 @@ export function AndroidInstallModal({
     </Dialog>
   );
 }
-

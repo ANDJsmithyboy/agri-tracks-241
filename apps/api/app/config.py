@@ -6,10 +6,10 @@ class Settings(BaseSettings):
 
     database_url: str = ""
     auto_init_db: bool = True
-    clerk_issuer: str = ""
-    clerk_jwks_url: str = ""
-    clerk_authorized_parties: str = ""
-    cors_origins: str = "http://localhost:3000"
+    clerk_issuer: str = "https://internal-oyster-8361.clerk.accounts.dev"
+    clerk_jwks_url: str = "https://internal-oyster-8361.clerk.accounts.dev/.well-known/jwks.json"
+    clerk_authorized_parties: str = "http://localhost:3000,http://127.0.0.1:3000,https://agri-tracks-241.vercel.app,com.poufa.app,com.poufa.app.debug"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,https://agri-tracks-241.vercel.app,https://poufa.smartandjai.com"
     deepseek_api_key: str = ""
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-flash"

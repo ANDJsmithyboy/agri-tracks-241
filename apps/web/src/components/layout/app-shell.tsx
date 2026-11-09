@@ -10,6 +10,7 @@ import { PoufaSidebar } from "@/components/layout/poufa-sidebar";
 import { PoufaHeader } from "@/components/layout/topbar";
 import { OfflineBanner } from "@/components/layout/sync-status";
 import { WelcomeModal } from "@/components/onboarding/welcome-modal";
+import { FirstLoginAndroidDialog } from "@/components/onboarding/first-login-android-dialog";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
@@ -33,6 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </SidebarInset>
       </SidebarProvider>
       <WelcomeModal />
+      <FirstLoginAndroidDialog />
     </RoleProvider>
   );
 }

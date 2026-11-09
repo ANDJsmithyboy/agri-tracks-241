@@ -267,7 +267,14 @@ def get_pool() -> ConnectionPool:
     if _pool is None:
         if not settings.database_url:
             raise RuntimeError("DATABASE_URL non configurée")
-        _pool = ConnectionPool(settings.database_url, min_size=1, max_size=5)
+        db_url = settings.database_url
+        # Nettoyage de channel_binding si présent car cela peut échouer sur certaines libpq Linux (Railway)
+        if "channel_binding=" in db_url:
+            import re
+            db_url = re.sub(r"[?&]channel_binding=[^&]+", "", db_url)
+            if "?" not in db_url and "&" in db_url:
+                db_url = db_url.replace("&", "?", 1)
+        _pool = ConnectionPool(db_url, min_size=1, max_size=5)
     return _pool
 
 

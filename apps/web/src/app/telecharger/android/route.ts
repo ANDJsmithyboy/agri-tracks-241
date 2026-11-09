@@ -1,19 +1,17 @@
 import { NextResponse } from "next/server";
+import { POUFA_ANDROID_RELEASE } from "@/lib/android-release";
 
 /**
- * Téléchargement direct de l'APK POUFA Android.
- * Priorité : variable d'environnement POUFA_ANDROID_APK_URL,
- * sinon fallback vers GitHub Releases du repo public.
+ * Route HTTP de téléchargement direct de l'APK POUFA Android.
+ * Redirige instantanément vers le binaire officiel hébergé sur GitHub Releases.
  */
 export async function GET(request: Request) {
-  const configuredUrl =
-    process.env.POUFA_ANDROID_APK_URL ||
-    "https://github.com/smartandjai/Agri-track-241/releases/latest/download/POUFA-Android.apk";
+  const targetUrl = process.env.POUFA_ANDROID_APK_URL || POUFA_ANDROID_RELEASE.url;
 
-  // Redirection HTTP 307 — le navigateur Android lance le téléchargement
-  const response = NextResponse.redirect(configuredUrl, { status: 307 });
+  const response = NextResponse.redirect(targetUrl, { status: 307 });
   response.headers.set("Cache-Control", "no-store, max-age=0, must-revalidate");
-  response.headers.set("X-Poufa-Release-Channel", "kimba-2026-demo");
+  response.headers.set("X-Poufa-Release-Version", POUFA_ANDROID_RELEASE.version);
+  response.headers.set("X-Poufa-Release-Channel", POUFA_ANDROID_RELEASE.channel);
 
   return response;
 }

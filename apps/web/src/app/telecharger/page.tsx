@@ -22,6 +22,7 @@ import {
 import { PoufaEmblem } from "@/components/poufa-emblem";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { POUFA_ANDROID_RELEASE } from "@/lib/android-release";
 import {
   Card,
   CardContent,
@@ -60,7 +61,7 @@ export default function TelechargerPage() {
         </Button>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="font-mono text-xs">
-            GitHub Release
+            Direct CDN
           </Badge>
           <Badge variant="brand" className="text-xs">
             KIMBA 2026
@@ -82,7 +83,7 @@ export default function TelechargerPage() {
               POUFA pour Android — Version Officielle
             </h1>
             <p className="max-w-2xl text-sm text-muted-foreground leading-relaxed">
-              Téléchargement direct depuis GitHub Releases : sans Google Drive, sans compte tiers et sans archive ZIP. Installez l&apos;APK directement sur votre téléphone.
+              Téléchargement direct et immédiat de l&apos;application native POUFA Android. Sans passerelle tierce, sans compte cloud : le fichier APK s&apos;enregistre directement dans vos téléchargements.
             </p>
           </div>
         </div>
@@ -110,7 +111,7 @@ export default function TelechargerPage() {
           </CardHeader>
 
           <CardContent className="space-y-5">
-            {/* Primary Action Button — Direct Browser Navigation to /telecharger/android */}
+            {/* Primary Action Button — Direct Browser Download from GitHub Release */}
             <div className="space-y-2">
               <Button
                 variant="brand"
@@ -118,14 +119,14 @@ export default function TelechargerPage() {
                 className="w-full gap-2.5 text-sm font-semibold shadow-xs transition-transform active:scale-[0.99]"
                 asChild
               >
-                <a href="/telecharger/android">
+                <a href={POUFA_ANDROID_RELEASE.url}>
                   <Download className="size-5" />
-                  <span>Télécharger POUFA pour Android (51.4 Mo)</span>
+                  <span>Télécharger POUFA pour Android ({POUFA_ANDROID_RELEASE.sizeLabel})</span>
                 </a>
               </Button>
               <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground">
-                <span>Format : APK autonome</span>
-                <span>Hébergé sur GitHub Releases</span>
+                <span>Format : APK autonome Android</span>
+                <span>Téléchargement direct officiel GitHub</span>
               </div>
             </div>
 
@@ -212,24 +213,24 @@ export default function TelechargerPage() {
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Version de publication</span>
-                <span className="font-mono font-medium">0.3.0-kimba-demo</span>
+                <span className="font-mono font-medium">{POUFA_ANDROID_RELEASE.version}-kimba-demo</span>
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Poids exact</span>
-                <span className="font-mono font-medium">51.4 Mo (53 924 742 octets)</span>
+                <span className="font-mono font-medium">{POUFA_ANDROID_RELEASE.sizeLabel} ({POUFA_ANDROID_RELEASE.sizeBytes} octets)</span>
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Compatibilité minimale</span>
-                <span className="font-medium">Android 8.0+ (Oreo, API 26)</span>
+                <span className="font-medium">{POUFA_ANDROID_RELEASE.minAndroid}</span>
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Distribution</span>
-                <span className="font-mono font-medium">GitHub Releases</span>
+                <span className="font-mono font-medium">GitHub Releases (Officiel)</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Somme de contrôle SHA-256</span>
-                <span className="font-mono text-[10px] text-muted-foreground truncate max-w-[180px]" title="4b68e8e7a685121b6d92a95c52c6e64c39de558a7b973c75ecf23bc2e48e02d0">
-                  4b68e8e7a685121b…
+                <span className="font-mono text-[10px] text-muted-foreground truncate max-w-[180px]" title={POUFA_ANDROID_RELEASE.sha256}>
+                  {POUFA_ANDROID_RELEASE.sha256.slice(0, 16)}…
                 </span>
               </div>
             </div>
@@ -346,7 +347,7 @@ export default function TelechargerPage() {
         </p>
         <p>
           Développé par <strong>SmartANDJ AI Technologies SARL</strong> (Libreville, Gabon).
-          Distribution GitHub Releases · Pas de dépendance tierce à l&apos;installation.
+          Distribution officielle directe · Prêt pour déploiement terrain.
         </p>
       </div>
     </div>
