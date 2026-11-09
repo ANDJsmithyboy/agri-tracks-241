@@ -4,14 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { Bell, Compass, Menu, Search, Smartphone } from "lucide-react";
-import { toast } from "sonner";
-import { startGuidedTour } from "@/components/onboarding/guided-tour";
+import { Bell, Search } from "lucide-react";
 import { CommandMenu } from "@/components/layout/command-menu";
-import { PoufaLogo } from "@/components/poufa-logo";
-import { RoleSwitcher } from "@/components/layout/role-switcher";
-import { SyncStatusBadge } from "@/components/layout/sync-status";
+import { PoufaSidebarToggle } from "@/components/layout/poufa-sidebar-toggle";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -34,10 +31,10 @@ function currentPageLabel(pathname: string): string {
       }
     }
   }
-  return best?.label ?? "POUFA";
+  return best?.label ?? "Tableau de bord";
 }
 
-export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
+export function Topbar() {
   const pathname = usePathname();
   const pageLabel = currentPageLabel(pathname);
   const [commandOpen, setCommandOpen] = useState(false);
@@ -45,127 +42,106 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
     <>
       <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} />
-      <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 sm:px-6">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="size-9 lg:hidden"
-        onClick={onOpenMenu}
-        aria-label="Ouvrir le menu"
-      >
-        <Menu className="size-5" aria-hidden />
-      </Button>
-
-      <div className="flex min-w-0 items-center gap-2 lg:hidden">
-        <PoufaLogo compact />
-      </div>
-
-      <div className="hidden min-w-0 items-center gap-2 lg:flex">
-        <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-sm">
-          <span className="text-muted-foreground">POUFA</span>
-          <span className="text-muted-foreground/60" aria-hidden>
-            /
-          </span>
-          <span className="truncate font-medium text-foreground">
-            {pageLabel}
-          </span>
-        </nav>
-      </div>
-
-      <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          data-tour="search-bar"
-          className="hidden h-8 gap-2 text-muted-foreground md:inline-flex hover:border-foreground/20 text-xs"
-          onClick={() => setCommandOpen(true)}
-        >
-          <Search className="size-3.5" aria-hidden />
-          <span>Rechercher…</span>
-          <kbd className="rounded border border-border bg-muted px-1.5 font-mono text-[10px]">
-            ⌘K
-          </kbd>
-        </Button>
-
-        <div className="hidden sm:block">
-          <SyncStatusBadge />
-        </div>
-
-        <div data-tour="role-switcher" className="hidden md:inline-flex">
-          <RoleSwitcher />
-        </div>
-
-        <div data-tour="theme-toggle">
-          <ThemeToggle />
-        </div>
-
-        {/* Accès direct Design Lab */}
-        <Button
-          variant="outline"
-          size="sm"
-          asChild
-          className="hidden xl:inline-flex h-8 px-2 text-[11px] font-mono text-muted-foreground hover:text-foreground"
-          title="Consulter le POUFA Design Lab"
-        >
-          <Link href="/design-lab">
-            Design Lab
-          </Link>
-        </Button>
-
-        {/* Bouton Visite Guidée */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => startGuidedTour()}
-          title="Lancer la visite interactive"
-          className="size-9 text-muted-foreground hover:text-foreground"
-          aria-label="Lancer la visite interactive"
-        >
-          <Compass className="size-4" aria-hidden />
-        </Button>
-
-        {/* Raccourci Téléchargement APK */}
-        <Button
-          variant="ghost"
-          size="icon"
-          asChild
-          title="Télécharger l'APK Android"
-          className="size-9 text-muted-foreground hover:text-foreground"
-        >
-          <Link href="/telecharger" aria-label="Télécharger l'APK Android">
-            <Smartphone className="size-4" aria-hidden />
-          </Link>
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative size-9"
-              aria-label="Notifications"
+      <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 sm:px-5">
+        {/* ── Left Region: Persistent Toggle + Breadcrumb ── */}
+        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <PoufaSidebarToggle />
+          <div className="h-4 w-px bg-border/80 hidden sm:block" aria-hidden />
+          <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs sm:text-sm font-medium">
+            <Link
+              href="/tableau-de-bord"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Bell className="size-4" aria-hidden />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <p className="px-2 py-3 text-center text-sm text-muted-foreground">
-              Aucune notification pour le moment.
-            </p>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              POUFA
+            </Link>
+            <span className="text-muted-foreground/40" aria-hidden>
+              /
+            </span>
+            <span className="truncate font-semibold text-foreground max-w-[140px] sm:max-w-none">
+              {pageLabel}
+            </span>
+          </nav>
+        </div>
 
-        <UserButton
-          appearance={{
-            elements: {
-              avatarBox: "size-8",
-            },
-          }}
-        />
-      </div>
-    </header>
+        {/* ── Center Region: Dedicated Global Search Command ── */}
+        <div className="flex-1 max-w-sm mx-4 hidden md:block">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-tour="search-bar"
+            onClick={() => setCommandOpen(true)}
+            className="w-full h-8 justify-between text-xs text-muted-foreground bg-secondary/30 hover:bg-secondary/60 hover:text-foreground border-border/80 px-2.5 rounded-lg shadow-none"
+          >
+            <span className="flex items-center gap-2">
+              <Search className="size-3.5" aria-hidden />
+              <span>Rechercher dans POUFA…</span>
+            </span>
+            <kbd className="font-mono text-[10px] text-muted-foreground/80 bg-background/80 px-1.5 py-0.5 rounded border border-border">
+              Ctrl K
+            </kbd>
+          </Button>
+        </div>
+
+        {/* ── Right Region: Workspace Scope, Theme, Notifications, Avatar ── */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Mobile search trigger */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setCommandOpen(true)}
+            className="size-8 text-muted-foreground md:hidden"
+            aria-label="Rechercher"
+          >
+            <Search className="size-4" />
+          </Button>
+
+          {/* Compact scope context */}
+          <Badge variant="secondary" className="hidden lg:inline-flex text-[11px] font-mono font-medium">
+            Ferme Kango
+          </Badge>
+
+          {/* Theme switch */}
+          <div data-tour="theme-toggle">
+            <ThemeToggle />
+          </div>
+
+          {/* Notifications dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 text-muted-foreground hover:text-foreground"
+                aria-label="Notifications"
+              >
+                <Bell className="size-4" aria-hidden />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-72">
+              <DropdownMenuLabel className="text-xs">Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <p className="px-2 py-3 text-center text-xs text-muted-foreground">
+                Aucune alerte sanitaire en attente.
+              </p>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* User profile avatar */}
+          <div className="pl-1">
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "size-8",
+                },
+              }}
+            />
+          </div>
+        </div>
+      </header>
     </>
   );
 }
+
+export { Topbar as PoufaHeader };

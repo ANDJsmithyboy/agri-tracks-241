@@ -2,20 +2,15 @@ import Link from "next/link";
 import {
   ArrowRight,
   ChevronRight,
-  Download,
   FileText,
   MapPin,
   Plus,
-  ShieldAlert,
 } from "lucide-react";
 import {
   PoufaAiSymbol,
-  PoufaAnalyticsIcon,
   PoufaFarmIcon,
-  PoufaFeedIcon,
   PoufaFlockIcon,
   PoufaPopulationIcon,
-  PoufaSanitaryIcon,
   PoufaTraceabilityIcon,
   PoufaWeighingIcon,
 } from "@/components/brand-icons";
@@ -65,35 +60,41 @@ export default async function DashboardPage() {
   const totalPop = activeBands.reduce((acc, b) => acc + b.current_population, 0);
   const totalDeaths = activeBands.reduce((acc, b) => acc + b.deaths, 0);
   const totalExits = activeBands.reduce((acc, b) => acc + b.exits, 0);
-  const viabilityRate = totalPlaced > 0 ? (((totalPlaced - totalDeaths) / totalPlaced) * 100).toFixed(1) : "100.0";
+  const viabilityRate = totalPlaced > 0 ? (((totalPlaced - totalDeaths) / totalPlaced) * 100).toFixed(1) : "94.8";
   const biomassTons = ((totalPop * 2.15) / 1000).toFixed(2);
+  const primaryFarm = farms[0] ?? {
+    name: "Ferme Avicole de Kango",
+    locality: "Kango",
+    province: "Estuaire",
+    official_code: "GA-EST-001",
+  };
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* ── Region 1: Open Canvas Executive Header ── */}
+    <div className="space-y-6 sm:space-y-8 pb-12">
+      {/* ── Section A: Page Introduction (Open Canvas) ── */}
       <section className="space-y-3" data-tour="dashboard-header">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
-                <span className="size-1.5 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)] animate-pulse" />
-                Gabon · Neon Serverless Live
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
+                <span className="size-1.5 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]" />
+                Province de l&apos;Estuaire · {primaryFarm.name}
               </span>
               <span className="text-xs text-muted-foreground font-mono">
                 {new Date().toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
               </span>
             </div>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Tableau de bord d&apos;exploitation
+              Tableau de bord
             </h1>
-            <p className="mt-1 text-xs sm:text-sm text-muted-foreground max-w-2xl">
-              Suivi consolidé des élevages, des performances zootechniques et des opérations nationales POUFA.
+            <p className="mt-1 text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+              Suivi consolidé des élevages, des performances et des opérations.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Select defaultValue="Toutes les provinces">
-              <SelectTrigger className="w-44 h-9 text-xs">
+            <Select defaultValue="Estuaire">
+              <SelectTrigger className="w-36 h-9 text-xs">
                 <SelectValue placeholder="Province" />
               </SelectTrigger>
               <SelectContent>
@@ -122,25 +123,25 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      {/* ── Region 2: Primary Operational Truth (Unified Signature Surface) ── */}
+      {/* ── Section B: Executive Performance (Unified Editorial Surface) ── */}
       <section
-        aria-label="Vérité opérationnelle avicole"
+        aria-label="Effectifs et indicateurs d'exploitation"
         className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden"
         data-tour="kpi-cards"
       >
         <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-12 lg:divide-y-0 lg:divide-x">
-          {/* Main Hero: Current Live Population */}
+          {/* Main Hero: Current Live Population (648) */}
           <div className="lg:col-span-5 p-6 flex flex-col justify-between space-y-4 bg-gradient-to-br from-card to-secondary/30">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2.5">
                 <div className="flex size-9 items-center justify-center rounded-lg border border-border bg-secondary/50 text-foreground">
                   <PoufaPopulationIcon size={20} strokeWidth={1.75} />
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Effectif Présent
+                    Effectif présent
                   </p>
-                  <p className="text-xs text-muted-foreground">Population vivante contrôlée</p>
+                  <p className="text-xs text-muted-foreground">Bande active · B-2026-014</p>
                 </div>
               </div>
               <Badge variant="brand" className="text-[10px] tracking-wide">
@@ -153,28 +154,28 @@ export default async function DashboardPage() {
                 <span className="font-mono text-5xl font-extrabold tracking-tight text-foreground">
                   {totalPop.toLocaleString("fr-FR")}
                 </span>
-                <span className="text-sm font-medium text-muted-foreground">sujets en élevage</span>
+                <span className="text-sm font-medium text-muted-foreground">sujets en bâtiment</span>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Arithmétique certifiée : <strong className="text-foreground">{totalPlaced.toLocaleString("fr-FR")}</strong> placés − <strong className="text-foreground">{totalDeaths}</strong> mortalités − <strong className="text-foreground">{totalExits}</strong> sorties
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Effectif calculé à partir des mouvements enregistrés : <strong className="text-foreground">{totalPlaced.toLocaleString("fr-FR")}</strong> placés − <strong className="text-foreground">{totalDeaths}</strong> mortalités − <strong className="text-foreground">{totalExits}</strong> sorties
               </p>
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-border/60 text-xs">
-              <span className="text-muted-foreground">Bande active : <strong>B-2026-014</strong></span>
+              <span className="text-muted-foreground">Âge du lot : <strong>J+34 sur 45 jours</strong></span>
               <Link href="/bandes" className="font-medium text-[var(--brand-green)] dark:text-[var(--brand-neon)] hover:underline inline-flex items-center gap-1">
-                Détails du lot <ChevronRight className="size-3" />
+                Afficher les détails <ChevronRight className="size-3" />
               </Link>
             </div>
           </div>
 
-          {/* Secondary Pillars (3 sub-columns) */}
+          {/* Secondary Pillars (3 balanced sub-columns) */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
             {/* Pillar 1: Active Bands */}
             <div className="p-5 flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Bandes Actives
+                  Bandes actives
                 </p>
                 <PoufaFlockIcon size={18} className="text-muted-foreground" />
               </div>
@@ -182,18 +183,18 @@ export default async function DashboardPage() {
                 <p className="font-mono text-3xl font-bold tracking-tight text-foreground">
                   {activeBands.length}
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">En cours de cycle (J+34)</p>
+                <p className="text-xs text-muted-foreground mt-0.5">B-2026-014 (Bâtiment 1)</p>
               </div>
               <div className="text-[11px] text-muted-foreground pt-2 border-t border-border/60">
-                100 % sous protocole certifié
+                Suivi zootechnique actif
               </div>
             </div>
 
-            {/* Pillar 2: Biomass & Weight */}
+            {/* Pillar 2: Biomass & Average Live Weight */}
             <div className="p-5 flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  Poids Moyen Vif
+                  Poids moyen vif
                 </p>
                 <PoufaWeighingIcon size={18} className="text-muted-foreground" />
               </div>
@@ -202,14 +203,14 @@ export default async function DashboardPage() {
                   <p className="font-mono text-3xl font-bold tracking-tight text-foreground">2,15</p>
                   <span className="text-xs font-semibold text-muted-foreground">kg</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Biomasse : {biomassTons} tonnes</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Biomasse estimée : {biomassTons} t</p>
               </div>
               <div className="text-[11px] text-muted-foreground pt-2 border-t border-border/60">
-                GMQ moyen : 47,8 g/jour
+                GMQ mesuré : 47,8 g/jour
               </div>
             </div>
 
-            {/* Pillar 3: Farms Followed */}
+            {/* Pillar 3: Farms Followed vs Target */}
             <div className="p-5 flex flex-col justify-between space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -220,66 +221,77 @@ export default async function DashboardPage() {
               <div>
                 <div className="flex items-baseline gap-1">
                   <p className="font-mono text-3xl font-bold tracking-tight text-foreground">{activeFarms}</p>
-                  <span className="text-xs text-muted-foreground">/ {farms.length}</span>
+                  <span className="text-xs text-muted-foreground">active(s)</span>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Estuaire & Moyen-Ogooué</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{primaryFarm.locality} (Estuaire)</p>
               </div>
               <div className="text-[11px] text-muted-foreground pt-2 border-t border-border/60">
-                Cible nationale : 150 fermes
+                Cible du programme : 150 fermes
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Region 3: Production Dynamics & Territory ── */}
-      <section className="grid gap-4 lg:grid-cols-3">
+      {/* ── Section C: Production Dynamics & Compact Site Summary ── */}
+      <section className="grid gap-4 lg:grid-cols-3 items-start">
         <ProductionChart />
 
-        {/* Territory / Provincial Distribution */}
-        <div className="rounded-xl border border-border bg-card p-5 flex flex-col justify-between shadow-xs">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
-                <MapPin className="size-4 text-[var(--brand-green)] dark:text-[var(--brand-neon)]" />
-                Implantation territoriale
-              </h2>
-              <Badge variant="secondary" className="text-[10px]">
-                {farms.length} fermes
-              </Badge>
+        {/* Compact, useful site summary (No large empty void!) */}
+        <div className="rounded-xl border border-border bg-card p-5 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between border-b border-border/80 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex size-7 items-center justify-center rounded-md border border-border bg-secondary/50 text-[var(--brand-green)] dark:text-[var(--brand-neon)]">
+                <MapPin className="size-3.5" />
+              </div>
+              <div>
+                <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Site d&apos;exploitation
+                </h2>
+                <p className="text-sm font-semibold text-foreground">{primaryFarm.name}</p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Répartition des sites avicoles enregistrés par province.
-            </p>
+            <Badge variant="outline" className="font-mono text-[10px]">
+              {primaryFarm.official_code}
+            </Badge>
           </div>
 
-          <div className="space-y-2.5 my-4">
-            {farms.map((f) => (
-              <div
-                key={f.id}
-                className="flex items-center justify-between rounded-lg border border-border/70 bg-secondary/20 p-2.5 text-xs transition-colors hover:bg-secondary/40"
-              >
-                <div>
-                  <p className="font-medium text-foreground">{f.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{f.locality} · {f.province}</p>
-                </div>
-                <Badge variant="outline" className="font-mono text-[10px]">
-                  {f.official_code}
-                </Badge>
-              </div>
-            ))}
+          <div className="space-y-2.5 text-xs">
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">Localisation :</span>
+              <span className="font-medium text-foreground">{primaryFarm.locality} · {primaryFarm.province}</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">Bâtiment actif :</span>
+              <span className="font-mono font-medium text-foreground">Bâtiment 1 (1 000 places)</span>
+            </div>
+            <div className="flex items-center justify-between py-1 border-b border-border/50">
+              <span className="text-muted-foreground">Bande en élevage :</span>
+              <span className="font-mono font-semibold text-foreground">B-2026-014 (J+34)</span>
+            </div>
+            <div className="flex items-center justify-between py-1">
+              <span className="text-muted-foreground">Veille sanitaire :</span>
+              <span className="inline-flex items-center gap-1 font-medium text-[var(--brand-green)] dark:text-[var(--brand-neon)]">
+                <span className="size-1.5 rounded-full bg-current" />
+                Normal · Aucune alerte
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border/70 bg-secondary/20 p-2.5 text-[11px] text-muted-foreground leading-relaxed">
+            <strong className="text-foreground font-semibold">Déploiement national :</strong> 1 exploitation pilote active sur la province de l&apos;Estuaire. Cible institutionnelle : 150 fermes sous convention.
           </div>
 
           <Button variant="outline" size="sm" className="w-full text-xs" asChild>
-            <Link href="/cartographie">
-              Ouvrir la cartographie nationale
+            <Link href="/fermes">
+              Consulter la fiche d&apos;exploitation
               <ArrowRight className="size-3.5 ml-1.5" />
             </Link>
           </Button>
         </div>
       </section>
 
-      {/* ── Region 4: Activity, Health Surveillance & Traceability ── */}
+      {/* ── Section D: Activity, POUFA AI Assistant & Traceability ── */}
       <section className="grid gap-4 lg:grid-cols-12">
         {/* Active Bands Operational Ledger */}
         <div className="lg:col-span-8 rounded-xl border border-border bg-card shadow-xs overflow-hidden">
@@ -290,7 +302,7 @@ export default async function DashboardPage() {
                 Production avicole — Bandes en élevage
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Contrôle d&apos;effectif et suivi zootechnique certifié en temps réel.
+                Contrôle des effectifs et suivi zootechnique en temps réel.
               </p>
             </div>
             <Button variant="ghost" size="sm" className="text-xs" asChild>
@@ -304,18 +316,18 @@ export default async function DashboardPage() {
             <Table>
               <TableHeader>
                 <TableRow className="text-xs">
-                  <TableHead>Code officiel</TableHead>
+                  <TableHead className="w-36">Code bande</TableHead>
                   <TableHead>Ferme & Bâtiment</TableHead>
                   <TableHead className="text-right">Placés</TableHead>
                   <TableHead className="text-right">Morts</TableHead>
                   <TableHead className="text-right">Sorties</TableHead>
-                  <TableHead className="text-right">Présents</TableHead>
+                  <TableHead className="text-right font-bold">Présents</TableHead>
                   <TableHead className="text-center">Statut</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="text-xs">
                 {activeBands.map((b) => (
-                  <TableRow key={b.id} className="hover:bg-accent/40">
+                  <TableRow key={b.id} className="hover:bg-accent/40 transition-colors">
                     <TableCell className="font-mono font-semibold text-foreground">
                       <Link href={`/bandes/${b.id}`} className="hover:underline">
                         {b.official_code}
@@ -349,7 +361,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* POUFA AI Companion & Traceability Quick Access */}
+        {/* POUFA AI Companion & Traceability Seal */}
         <div className="lg:col-span-4 space-y-4">
           {/* POUFA AI Card */}
           <div className="rounded-xl border border-border bg-card p-5 space-y-3 shadow-xs">
@@ -366,7 +378,7 @@ export default async function DashboardPage() {
                 Synthèse d&apos;exploitation
               </p>
               <p className="mt-1 text-muted-foreground">
-                Bande B-2026-014 : viabilité 94,8 %, GMQ conforme (+1,8 % vs Ross 308). Lot de cession LP-2026-000142 tracé avec succès.
+                Bande B-2026-014 : 648 sujets en bâtiment, viabilité 94,8 %, poids moyen 2,15 kg. Cession de 300 sujets enregistrée sous le lot LP-2026-000142.
               </p>
             </div>
 
@@ -400,7 +412,7 @@ export default async function DashboardPage() {
                 <PoufaTraceabilityIcon size={16} className="text-[var(--brand-green)] dark:text-[var(--brand-neon)]" />
                 <h3 className="text-xs font-semibold text-foreground">Traçabilité des lots</h3>
               </div>
-              <Badge variant="secondary" className="text-[10px]">Certifié</Badge>
+              <Badge variant="secondary" className="text-[10px]">Validé</Badge>
             </div>
             <p className="font-mono text-xs font-bold text-foreground">LP-2026-000142</p>
             <p className="text-[11px] text-muted-foreground">
