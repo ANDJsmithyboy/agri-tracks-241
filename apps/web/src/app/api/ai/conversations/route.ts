@@ -1,7 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const API_BASE = process.env.API_BASE_URL || "http://localhost:8000";
+const API_BASE =
+  process.env.API_BASE_URL ||
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://fastapi-poufa-production.up.railway.app";
 
 export async function GET() {
   const { userId, getToken } = await auth();
