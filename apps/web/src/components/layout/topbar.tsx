@@ -42,13 +42,12 @@ export function Topbar() {
   return (
     <>
       <CommandMenu open={commandOpen} onOpenChange={setCommandOpen} />
-      <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/90 px-3 backdrop-blur-md supports-[backdrop-filter]:bg-background/70 sm:px-5">
-        {/* ── Left Region: Mobile Trigger + Breadcrumb (Desktop toggle is inside sidebar) ── */}
+      <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between border-b border-border/80 bg-background/95 px-3 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 sm:px-5">
+        {/* ── Left: Persistent PanelLeft Toggle + Minimal Breadcrumb ── */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <div className="md:hidden">
-            <PoufaSidebarToggle />
-          </div>
-          <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs sm:text-sm font-medium">
+          <PoufaSidebarToggle />
+          <div className="h-3.5 w-px bg-border/70 hidden sm:block" aria-hidden />
+          <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-xs font-medium">
             <Link
               href="/tableau-de-bord"
               className="text-muted-foreground hover:text-foreground transition-colors"
@@ -58,7 +57,7 @@ export function Topbar() {
             <span className="text-muted-foreground/40" aria-hidden>
               /
             </span>
-            <span className="truncate font-semibold text-foreground max-w-[140px] sm:max-w-none">
+            <span className="truncate font-medium text-foreground max-w-[160px] sm:max-w-none">
               {pageLabel}
             </span>
           </nav>

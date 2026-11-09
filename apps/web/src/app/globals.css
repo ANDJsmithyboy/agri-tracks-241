@@ -3,128 +3,130 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * POUFA — Royal Cream × Obsidian Neon (Design System 2026)
+ * POUFA — Quiet Luxury Signature Experience (Claude-Inspired 2026)
  *
- * Light: Royal Cream — Crème royal (#F5F0E7), surfaces ivoire (#FFFCF7),
- *        typographie encre sombre (#28251F), or antique (#A18152),
- *        touches mesurées de vert forêt POUFA (#245747).
+ * Royal Cream:
+ *   Background: #F8F5F0 · Sidebar: #F0EBE4 · Surface: #FFFEFC
+ *   Text: #292720 · Muted: #807B72 · Border: #E9E2D9 · Hover: #E7E1D8
+ *   Brand green: #245747 · Antique gold: #B09674
  *
- * Dark:  Obsidian Neon — Noir profond (#0B0D10), graphite (#101216),
- *        surfaces anthracite (#17191D), typographie ivoire (#F3F0E9),
- *        accents néon précis et exceptionnels (#B9F27C).
+ * Obsidian:
+ *   Background: #161718 · Sidebar: #111214 · Surface: #222326
+ *   Text: #F0EEE8 · Muted: #AAA8A2 · Border: #313235 · Hover: #292A2E
+ *   Restrained brand accent: #B6E681
  */
 :root {
   --radius: 0.875rem;
 
-  --background: #F5F0E7;
-  --foreground: #28251F;
+  --background: #F8F5F0;
+  --foreground: #292720;
 
-  --card: #FFFCF7;
-  --card-foreground: #28251F;
+  --card: #FFFEFC;
+  --card-foreground: #292720;
 
-  --popover: #FFFCF7;
-  --popover-foreground: #28251F;
+  --popover: #FFFEFC;
+  --popover-foreground: #292720;
 
-  --primary: #28251F;
-  --primary-foreground: #FFFCF7;
+  --primary: #292720;
+  --primary-foreground: #FFFEFC;
 
-  --secondary: #EEE7DC;
-  --secondary-foreground: #28251F;
+  --secondary: #F0EBE4;
+  --secondary-foreground: #292720;
 
-  --muted: #F1EBE2;
-  --muted-foreground: #777168;
+  --muted: #F0EBE4;
+  --muted-foreground: #807B72;
 
-  --accent: #EAE2D6;
-  --accent-foreground: #28251F;
+  --accent: #E7E1D8;
+  --accent-foreground: #292720;
 
   --destructive: #B53D39;
   --destructive-foreground: #FFFFFF;
 
-  --border: #E4DCCE;
-  --input: #D7CCBC;
+  --border: #E9E2D9;
+  --input: #E9E2D9;
   --ring: #245747;
 
   --brand-green: #245747;
-  --brand-gold: #A18152;
-  --brand-neon: #B9F27C;
+  --brand-gold: #B09674;
+  --brand-neon: #B6E681;
 
   --success: #245747;
   --success-foreground: #FFFFFF;
-  --warning: #A18152;
-  --warning-foreground: #28251F;
+  --warning: #B09674;
+  --warning-foreground: #292720;
   --info: #355C7D;
   --info-foreground: #FFFFFF;
 
-  --chart-1: #28251F;
+  --chart-1: #292720;
   --chart-2: #245747;
-  --chart-3: #A18152;
+  --chart-3: #B09674;
   --chart-4: #5964C5;
-  --chart-5: #777168;
+  --chart-5: #807B72;
 
-  --sidebar: #EEE7DC;
-  --sidebar-foreground: #28251F;
-  --sidebar-primary: #28251F;
-  --sidebar-primary-foreground: #FFFCF7;
-  --sidebar-accent: #E4DCCE;
-  --sidebar-accent-foreground: #28251F;
-  --sidebar-border: #E4DCCE;
+  --sidebar: #F0EBE4;
+  --sidebar-foreground: #292720;
+  --sidebar-primary: #292720;
+  --sidebar-primary-foreground: #FFFEFC;
+  --sidebar-accent: #E7E1D8;
+  --sidebar-accent-foreground: #292720;
+  --sidebar-border: #E9E2D9;
   --sidebar-ring: #245747;
 }
 
 .dark {
-  --background: #0B0D10;
-  --foreground: #F3F0E9;
+  --background: #161718;
+  --foreground: #F0EEE8;
 
-  --card: #17191D;
-  --card-foreground: #F3F0E9;
+  --card: #222326;
+  --card-foreground: #F0EEE8;
 
-  --popover: #1B1E23;
-  --popover-foreground: #F3F0E9;
+  --popover: #222326;
+  --popover-foreground: #F0EEE8;
 
-  --primary: #E9EAE7;
-  --primary-foreground: #101216;
+  --primary: #F0EEE8;
+  --primary-foreground: #161718;
 
-  --secondary: #25282D;
-  --secondary-foreground: #F3F0E9;
+  --secondary: #292A2E;
+  --secondary-foreground: #F0EEE8;
 
-  --muted: #202329;
-  --muted-foreground: #A3A5AA;
+  --muted: #222326;
+  --muted-foreground: #AAA8A2;
 
-  --accent: #292D33;
-  --accent-foreground: #F3F0E9;
+  --accent: #292A2E;
+  --accent-foreground: #F0EEE8;
 
   --destructive: #E05252;
-  --destructive-foreground: #101216;
+  --destructive-foreground: #161718;
 
-  --border: #30343A;
-  --input: #393E45;
-  --ring: #B9F27C;
+  --border: #313235;
+  --input: #313235;
+  --ring: #B6E681;
 
   --brand-green: #8BC49B;
-  --brand-neon: #B9F27C;
-  --brand-gold: #C6A778;
+  --brand-neon: #B6E681;
+  --brand-gold: #B09674;
 
-  --success: #B9F27C;
-  --success-foreground: #101216;
-  --warning: #C6A778;
-  --warning-foreground: #101216;
+  --success: #B6E681;
+  --success-foreground: #161718;
+  --warning: #B09674;
+  --warning-foreground: #161718;
   --info: #70A0D0;
-  --info-foreground: #101216;
+  --info-foreground: #161718;
 
-  --chart-1: #E9EAE7;
-  --chart-2: #B9F27C;
+  --chart-1: #F0EEE8;
+  --chart-2: #B6E681;
   --chart-3: #8BC49B;
-  --chart-4: #C6A778;
-  --chart-5: #A3A5AA;
+  --chart-4: #B09674;
+  --chart-5: #AAA8A2;
 
-  --sidebar: #101216;
-  --sidebar-foreground: #F3F0E9;
-  --sidebar-primary: #E9EAE7;
-  --sidebar-primary-foreground: #101216;
-  --sidebar-accent: #1E2228;
-  --sidebar-accent-foreground: #F3F0E9;
-  --sidebar-border: #262A30;
-  --sidebar-ring: #B9F27C;
+  --sidebar: #111214;
+  --sidebar-foreground: #F0EEE8;
+  --sidebar-primary: #F0EEE8;
+  --sidebar-primary-foreground: #161718;
+  --sidebar-accent: #292A2E;
+  --sidebar-accent-foreground: #F0EEE8;
+  --sidebar-border: #313235;
+  --sidebar-ring: #B6E681;
 }
 
 @theme inline {
@@ -277,4 +279,17 @@
 }
 .driver-popover-arrow-side-bottom.driver-popover-arrow {
   border-top-color: var(--card) !important;
+}
+
+/* ── Quiet Luxury Editorial Typography (Newsreader / Charter) ── */
+.font-serif {
+  font-family: var(--font-newsreader), "Newsreader", Charter, "Bitstream Charter", "Sitka Text", Cambria, serif;
+}
+
+/* ── Claude-Inspired Soft Two-Layer Composer Shadow ── */
+.shadow-composer {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 10px 30px -4px rgba(0, 0, 0, 0.06);
+}
+.dark .shadow-composer {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.35), 0 12px 32px -4px rgba(0, 0, 0, 0.45);
 }

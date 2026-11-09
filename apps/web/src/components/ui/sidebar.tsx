@@ -13,7 +13,7 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "poufa_sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "15.5rem";
+const SIDEBAR_WIDTH = "14.5rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
@@ -80,11 +80,17 @@ export function SidebarProvider({
       const params = new URLSearchParams(window.location.search);
       const themeParam = params.get("theme");
       if (themeParam === "light") {
+        try {
+          window.localStorage.setItem("theme", "light");
+        } catch {}
         document.documentElement.classList.remove("dark");
-        document.documentElement.classList.add("light");
+        document.documentElement.style.colorScheme = "light";
       } else if (themeParam === "dark") {
-        document.documentElement.classList.remove("light");
+        try {
+          window.localStorage.setItem("theme", "dark");
+        } catch {}
         document.documentElement.classList.add("dark");
+        document.documentElement.style.colorScheme = "dark";
       }
     }
   }, []);
@@ -228,13 +234,13 @@ export function Sidebar({
   }
 
   const isCollapsed = state === "collapsed";
+  const isOffcanvas = collapsible === "offcanvas";
 
-  // Desktop icon rail mode (when collapsed, width is 64px (w-16) and all icons remain visible!)
   return (
     <aside
       className={cn(
         "group peer hidden md:block text-sidebar-foreground transition-[width] duration-200 ease-out shrink-0",
-        isCollapsed ? "w-16" : "w-[var(--sidebar-width)]",
+        isCollapsed ? (isOffcanvas ? "w-0 overflow-hidden" : "w-16") : "w-[var(--sidebar-width)]",
         className
       )}
       data-state={state}
@@ -246,14 +252,21 @@ export function Sidebar({
       <div
         className={cn(
           "duration-200 relative h-svh bg-transparent transition-[width] ease-out",
-          isCollapsed ? "w-16" : "w-[var(--sidebar-width)]"
+          isCollapsed ? (isOffcanvas ? "w-0" : "w-16") : "w-[var(--sidebar-width)]"
         )}
       />
       {/* Fixed sidebar content */}
       <div
         className={cn(
-          "duration-200 fixed inset-y-0 z-20 hidden h-svh transition-[width] ease-out md:flex md:flex-col",
-          isCollapsed ? "w-16" : "w-[var(--sidebar-width)]",
+          "duration-200 fixed inset-y-0 z-20 hidden h-svh transition-[left,right,width] ease-out md:flex md:flex-col",
+          side === "left"
+            ? isCollapsed && isOffcanvas
+              ? "left-[calc(var(--sidebar-width)*-1)]"
+              : "left-0"
+            : isCollapsed && isOffcanvas
+            ? "right-[calc(var(--sidebar-width)*-1)]"
+            : "right-0",
+          isCollapsed && !isOffcanvas ? "w-16" : "w-[var(--sidebar-width)]",
           "border-r border-sidebar-border bg-sidebar"
         )}
         {...props}

@@ -159,13 +159,6 @@ export const NAV_GROUPS: NavGroup[] = [
         roles: "all",
         phase: "mvp",
       },
-      {
-        label: "Design Lab",
-        href: "/design-lab",
-        icon: Palette,
-        roles: "all",
-        phase: "mvp",
-      },
     ],
   },
   {

@@ -6,34 +6,28 @@ import {
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent,
 } from "react";
 import {
   AlertCircle,
-  ArrowUp,
   Check,
   Columns2,
   Copy,
   History,
   Maximize2,
-  MessageSquarePlus,
   Minimize2,
   RotateCcw,
-  Search,
   Sparkles,
-  Square,
-  Trash2,
 } from "lucide-react";
 import { PoufaEmblem } from "@/components/poufa-emblem";
 import {
-  PoufaAiSymbol,
   PoufaFeedIcon,
   PoufaFlockIcon,
   PoufaSanitaryIcon,
   PoufaWeighingIcon,
 } from "@/components/brand-icons";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PoufaComposer } from "@/components/ai/poufa-composer";
+import { AiSidebarNav } from "@/components/ai/ai-sidebar-nav";
 import {
   Sheet,
   SheetContent,
@@ -46,7 +40,6 @@ import { cn } from "@/lib/utils";
 interface ConversationSummary {
   id: string;
   title: string;
-  farmId?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
 }
@@ -62,27 +55,27 @@ interface ChatMessage {
 const SUGGESTED_PROMPTS = [
   {
     icon: PoufaFlockIcon,
-    label: "Analyser ma bande",
+    label: "Effectif & mortalités",
     prompt:
-      "Résume ma bande en cours avec l'effectif placé, les mortalités, les sorties et l'effectif actuel présent.",
+      "Résume la bande active B-2026-014 : effectif placé, mortalités enregistrées, sorties cédées et effectif actuel en bâtiment.",
   },
   {
     icon: PoufaFeedIcon,
-    label: "Vérifier mes stocks",
+    label: "Stocks d'aliments",
     prompt:
-      "Quelles sont mes réceptions d'intrants récentes et l'aliment distribué sur ma bande ?",
+      "Quelles sont les réceptions récentes d'aliment et la consommation estimée de ma bande en cours ?",
   },
   {
     icon: PoufaWeighingIcon,
-    label: "Comprendre mes indicateurs",
+    label: "Indicateurs zootechniques",
     prompt:
-      "Quel est mon taux de mortalité, ma viabilité et la dernière pesée enregistrée ?",
+      "Quel est le poids vif moyen, le GMQ calculé et la viabilité globale du lot ?",
   },
   {
     icon: PoufaSanitaryIcon,
-    label: "Consulter mes signalements",
+    label: "Santé & traçabilité",
     prompt:
-      "Quels signalements sanitaires et quels lots de traçabilité sont enregistrés sur mon exploitation ?",
+      "Quels sont les signalements sanitaires récents et les lots de traçabilité enregistrés pour cette exploitation ?",
   },
 ];
 
@@ -114,7 +107,7 @@ function FormattedMessageContent({ content }: { content: string }) {
   };
 
   return (
-    <div className="space-y-3 text-sm leading-relaxed">
+    <div className="space-y-3 text-sm leading-relaxed text-foreground">
       {blocks.map((block, i) => {
         const lines = block.split("\n");
         const isBulletList = lines.every((l) =>
@@ -122,7 +115,7 @@ function FormattedMessageContent({ content }: { content: string }) {
         );
         if (isBulletList && lines.length > 0) {
           return (
-            <ul key={i} className="list-disc space-y-1.5 pl-5">
+            <ul key={i} className="list-disc space-y-1 pl-5 text-foreground/90">
               {lines.map((line, j) => (
                 <li key={j}>
                   {formatInline(line.replace(/^\s*([-*•]|\d+\.)\s+/, ""))}
@@ -135,7 +128,7 @@ function FormattedMessageContent({ content }: { content: string }) {
           return (
             <h4
               key={i}
-              className="pt-1 text-sm font-semibold tracking-tight text-foreground"
+              className="pt-2 text-sm font-semibold tracking-tight text-foreground"
             >
               {formatInline(block.trim().replace(/^###\s+/, ""))}
             </h4>
@@ -145,14 +138,14 @@ function FormattedMessageContent({ content }: { content: string }) {
           return (
             <h3
               key={i}
-              className="pt-1 text-base font-semibold tracking-tight text-foreground"
+              className="pt-2 text-base font-semibold tracking-tight text-foreground"
             >
               {formatInline(block.trim().replace(/^##\s+/, ""))}
             </h3>
           );
         }
         return (
-          <p key={i} className="whitespace-pre-wrap">
+          <p key={i} className="whitespace-pre-wrap text-foreground/90 leading-relaxed">
             {formatInline(block)}
           </p>
         );
@@ -162,11 +155,9 @@ function FormattedMessageContent({ content }: { content: string }) {
 }
 
 export default function PoufaAiPage() {
-  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -178,23 +169,6 @@ export default function PoufaAiPage() {
   const abortRef = useRef<AbortController | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
-
-  const loadConversations = useCallback(async () => {
-    try {
-      const res = await fetch("/api/ai/conversations");
-      if (!res.ok) return;
-      const data = await res.json();
-      if (Array.isArray(data.conversations)) {
-        setConversations(data.conversations);
-      }
-    } catch {
-      // Ignore initial offline/network error
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadConversations();
-  }, [loadConversations]);
 
   const selectConversation = useCallback(async (convId: string) => {
     setActiveConvId(convId);
@@ -237,20 +211,26 @@ export default function PoufaAiPage() {
     setDrawerOpen(false);
   }, []);
 
-  const handleDeleteConversation = useCallback(
-    async (convId: string) => {
-      try {
-        await fetch(`/api/ai/conversations/${convId}`, { method: "DELETE" });
-        setConversations((prev) => prev.filter((c) => c.id !== convId));
-        if (activeConvId === convId) {
-          handleNewConversation();
-        }
-      } catch {
-        // Ignore
+  // Sync with adaptive sidebar custom events
+  useEffect(() => {
+    const handleSelectEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<{ id: string }>;
+      if (customEvent.detail?.id) {
+        void selectConversation(customEvent.detail.id);
       }
-    },
-    [activeConvId, handleNewConversation],
-  );
+    };
+    const handleNewEvent = () => {
+      handleNewConversation();
+    };
+
+    window.addEventListener("poufa:select-ai-conversation", handleSelectEvent);
+    window.addEventListener("poufa:new-ai-conversation", handleNewEvent);
+
+    return () => {
+      window.removeEventListener("poufa:select-ai-conversation", handleSelectEvent);
+      window.removeEventListener("poufa:new-ai-conversation", handleNewEvent);
+    };
+  }, [selectConversation, handleNewConversation]);
 
   const scrollToBottomIfNear = useCallback(() => {
     const el = scrollContainerRef.current;
@@ -377,7 +357,7 @@ export default function PoufaAiPage() {
             m.id === assistantPlaceholderId ? { ...m, status: "complete" } : m,
           ),
         );
-        void loadConversations();
+        window.dispatchEvent(new CustomEvent("poufa:ai-conversations-updated"));
       } catch (err) {
         if ((err as Error).name === "AbortError") {
           setMessages((prev) =>
@@ -414,19 +394,12 @@ export default function PoufaAiPage() {
         abortRef.current = null;
       }
     },
-    [activeConvId, isStreaming, loadConversations],
+    [activeConvId, isStreaming],
   );
 
   const handleStop = useCallback(() => {
     abortRef.current?.abort();
   }, []);
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      void sendMessage(input);
-    }
-  };
 
   const handleCopy = async (id: string, text: string) => {
     try {
@@ -438,415 +411,276 @@ export default function PoufaAiPage() {
     }
   };
 
-  const filteredConversations = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return conversations;
-    return conversations.filter((c) => c.title.toLowerCase().includes(q));
-  }, [conversations, searchQuery]);
-
-  const HistoryList = (
-    <div className="flex h-full flex-col gap-3">
-      <Button
-        onClick={handleNewConversation}
-        variant="outline"
-        className="w-full justify-start gap-2 border-border bg-card font-medium"
-      >
-        <MessageSquarePlus className="size-4 text-primary" aria-hidden />
-        Nouvelle conversation
-      </Button>
-
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute top-2.5 left-2.5 size-4 text-muted-foreground"
-          aria-hidden
-        />
-        <Input
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Rechercher…"
-          aria-label="Rechercher une conversation"
-          className="h-9 pl-8 text-xs"
-        />
-      </div>
-
-      <div className="flex-1 space-y-1 overflow-y-auto pr-1">
-        {filteredConversations.length === 0 ? (
-          <p className="px-2 py-6 text-center text-xs text-muted-foreground">
-            Aucune conversation récente.
-          </p>
-        ) : (
-          filteredConversations.map((c) => {
-            const active = c.id === activeConvId;
-            return (
-              <div
-                key={c.id}
-                className={cn(
-                  "group flex items-center justify-between gap-1 rounded-lg px-2.5 py-2 text-xs transition-colors",
-                  active
-                    ? "bg-secondary font-medium text-secondary-foreground"
-                    : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
-                )}
-              >
-                <button
-                  type="button"
-                  onClick={() => void selectConversation(c.id)}
-                  className="flex-1 truncate text-left"
-                >
-                  {c.title}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void handleDeleteConversation(c.id)}
-                  aria-label={`Supprimer ${c.title}`}
-                  className="opacity-0 transition-opacity group-hover:opacity-100 hover:text-destructive"
-                >
-                  <Trash2 className="size-3.5" aria-hidden />
-                </button>
-              </div>
-            );
-          })
-        )}
-      </div>
-    </div>
-  );
+  const isThreadActive = messages.length > 0;
+  const contentWidthClass =
+    layoutMode === "focus" ? "max-w-[760px]" : "max-w-[1040px]";
 
   return (
     <div
       className={cn(
-        "flex gap-5 transition-all duration-200",
+        "flex flex-col flex-1 transition-all duration-200",
         isFullscreen
           ? "fixed inset-0 z-50 h-dvh bg-background p-3 sm:p-6"
-          : "h-[calc(100dvh-7.5rem)] min-h-[34rem]",
+          : "h-[calc(100dvh-5.5rem)] min-h-[34rem]",
       )}
     >
-      {/* Desktop Conversation Sidebar */}
-      {!isFullscreen && (
-        <aside
-          aria-label="Historique des conversations POUFA AI"
-          className="hidden w-64 shrink-0 flex-col rounded-xl border border-border bg-card p-3.5 lg:flex"
-        >
-          {HistoryList}
-        </aside>
-      )}
+      {/* ── Minimal Workspace Top Bar ── */}
+      <header className="flex h-11 shrink-0 items-center justify-between border-b border-border/60 px-4 sm:px-6">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold tracking-tight text-foreground">
+            POUFA AI
+          </span>
+          <span className="text-muted-foreground/40" aria-hidden>·</span>
+          <span className="text-xs text-muted-foreground">
+            Assistant zootéchnique
+          </span>
+        </div>
 
-      {/* Main Chat Workspace */}
-      <section className="flex min-w-0 flex-1 flex-col rounded-xl border border-border bg-card">
-        {/* Minimal Header Bar */}
-        <header className="flex items-center justify-between border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2.5">
-            <PoufaEmblem className="size-7" />
-            <div>
-              <h1 className="text-sm font-semibold tracking-tight text-foreground">
-                POUFA AI
-              </h1>
-              <p className="text-[11px] text-muted-foreground">
-                Votre assistant pour le suivi avicole.
-              </p>
-            </div>
-          </div>
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Toggle Mode Focus (760px) / Large (1040px) */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() =>
+              setLayoutMode(layoutMode === "focus" ? "wide" : "focus")
+            }
+            title={
+              layoutMode === "focus"
+                ? "Passer en mode large (1040px)"
+                : "Passer en mode concentration (760px)"
+            }
+            className="hidden sm:inline-flex h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <Columns2 className="size-3.5 mr-1" aria-hidden />
+            <span>{layoutMode === "focus" ? "Focus" : "Large"}</span>
+          </Button>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Toggle Mode Focus (760px) / Large (1200px) */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                setLayoutMode(layoutMode === "focus" ? "wide" : "focus")
-              }
-              title={
-                layoutMode === "focus"
-                  ? "Passer en mode grand écran (1200px)"
-                  : "Passer en mode concentration (760px)"
-              }
-              className="hidden sm:inline-flex h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <Columns2 className="size-3.5" aria-hidden />
-              <span>{layoutMode === "focus" ? "Focus" : "Large"}</span>
-            </Button>
+          {/* Plein écran immersif */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            title={isFullscreen ? "Quitter le plein écran" : "Plein écran immersif"}
+            className="size-7 text-muted-foreground hover:text-foreground"
+            aria-label="Basculer le plein écran"
+          >
+            {isFullscreen ? (
+              <Minimize2 className="size-3.5" />
+            ) : (
+              <Maximize2 className="size-3.5" />
+            )}
+          </Button>
 
-            {/* Plein écran immersif */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              title={
-                isFullscreen
-                  ? "Quitter le plein écran"
-                  : "Mode plein écran immersif"
-              }
-              className="size-8 text-muted-foreground hover:text-foreground"
-              aria-label="Basculer le plein écran"
-            >
-              {isFullscreen ? (
-                <Minimize2 className="size-4" aria-hidden />
-              ) : (
-                <Maximize2 className="size-4" aria-hidden />
-              )}
-            </Button>
-
+          {isThreadActive && (
             <Button
               variant="ghost"
               size="sm"
               onClick={handleNewConversation}
-              className="hidden sm:inline-flex h-8"
+              className="h-7 text-xs text-muted-foreground hover:text-foreground"
             >
-              <MessageSquarePlus className="size-4" aria-hidden />
               Nouvelle
             </Button>
+          )}
 
-            {/* Mobile History Drawer */}
-            <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="lg:hidden size-8 p-0"
-                  aria-label="Historique des conversations"
-                >
-                  <History className="size-4" aria-hidden />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-4">
-                <SheetHeader className="pb-3">
-                  <SheetTitle className="flex items-center gap-2 text-sm">
-                    <PoufaEmblem className="size-6" />
-                    POUFA AI
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="h-[calc(100dvh-5rem)]">{HistoryList}</div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </header>
+          {/* Mobile History Drawer trigger */}
+          <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden size-7 text-muted-foreground"
+                aria-label="Historique des conversations"
+              >
+                <History className="size-3.5" aria-hidden />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 p-2">
+              <SheetHeader className="p-3 pb-1 border-b border-sidebar-border">
+                <SheetTitle className="flex items-center gap-2 text-sm font-semibold">
+                  <PoufaEmblem className="size-5" />
+                  POUFA AI
+                </SheetTitle>
+              </SheetHeader>
+              <AiSidebarNav
+                activeId={activeConvId}
+                onSelectConversation={(id) => void selectConversation(id)}
+                onNewConversation={handleNewConversation}
+              />
+            </SheetContent>
+          </Sheet>
+        </div>
+      </header>
 
-        {/* Thread or Empty First Screen */}
-        <div
-          ref={scrollContainerRef}
-          onScroll={(e) => {
-            const el = e.currentTarget;
-            nearBottomRef.current =
-              el.scrollHeight - el.scrollTop - el.clientHeight < 96;
-          }}
-          className="flex-1 overflow-y-auto px-4 py-6 sm:px-8"
-        >
-          {messages.length === 0 ? (
-            <div
-              className={cn(
-                "flex h-full flex-col items-center justify-center text-center",
-                layoutMode === "focus"
-                  ? "max-w-[760px] mx-auto"
-                  : "max-w-[1200px] mx-auto",
-              )}
-            >
-              <PoufaEmblem className="mb-4 size-14" />
-              <h2 className="text-xl font-semibold tracking-tight text-foreground">
-                POUFA AI
-              </h2>
-              <p className="mt-1.5 max-w-md text-sm text-muted-foreground">
-                Votre assistant pour le suivi avicole. Posez une question sur
-                vos bandes, vos stocks, vos pesées ou la traçabilité de vos
-                lots.
+      {/* ── Main Chat Area ── */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          nearBottomRef.current =
+            el.scrollHeight - el.scrollTop - el.clientHeight < 96;
+        }}
+        className="flex-1 overflow-y-auto px-4 py-6 sm:px-8"
+      >
+        {!isThreadActive ? (
+          /* ── Quiet Luxury Centered Empty State ── */
+          <div className="flex h-full min-h-[28rem] flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center max-w-xl mx-auto px-4">
+              <PoufaEmblem className="mb-6 size-12" />
+
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-foreground tracking-tight leading-tight">
+                Un regard plus clair sur votre exploitation.
+              </h1>
+
+              <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
+                Vos questions, vos données, vos décisions.
               </p>
 
-              <div className="mt-7 grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2">
-                {SUGGESTED_PROMPTS.map((item) => {
-                  const PromptIcon = item.icon;
+              {/* Centered Signature Composer */}
+              <div className="w-full max-w-[680px] mt-8">
+                <PoufaComposer
+                  value={input}
+                  onChange={setInput}
+                  onSubmit={() => void sendMessage(input)}
+                  onStop={handleStop}
+                  isStreaming={isStreaming}
+                  placeholder="Posez une question sur votre exploitation ou vos bandes…"
+                  badgeLabel="Bande active B-2026-014"
+                />
+              </div>
+
+              {/* Discrete Suggested Prompts */}
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-[680px] text-left">
+                {SUGGESTED_PROMPTS.map((item, idx) => {
+                  const Icon = item.icon;
                   return (
                     <button
-                      key={item.label}
+                      key={idx}
                       type="button"
                       onClick={() => void sendMessage(item.prompt)}
-                      className="group flex flex-col items-start rounded-xl border border-border bg-card/60 p-3.5 text-left transition-all hover:border-[var(--brand-green)] dark:hover:border-[var(--brand-neon)] hover:bg-secondary/40 shadow-xs"
+                      className="group flex items-start gap-2.5 rounded-xl border border-border/70 bg-card/60 p-3 text-left transition-all hover:bg-card hover:border-border hover:shadow-xs"
                     >
-                      <div className="flex items-center gap-2">
-                        <div className="flex size-6 items-center justify-center rounded-md border border-border bg-secondary/50 text-foreground group-hover:text-[var(--brand-green)] dark:group-hover:text-[var(--brand-neon)]">
-                          <PromptIcon size={14} strokeWidth={1.75} />
-                        </div>
-                        <span className="text-xs font-semibold text-foreground">
+                      <Icon className="size-4 shrink-0 mt-0.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-foreground">
                           {item.label}
-                        </span>
+                        </p>
+                        <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                          {item.prompt}
+                        </p>
                       </div>
-                      <span className="mt-2 line-clamp-2 text-[11px] text-muted-foreground leading-relaxed">
-                        {item.prompt}
-                      </span>
                     </button>
                   );
                 })}
               </div>
             </div>
-          ) : (
-            <div
-              className={cn(
-                "space-y-6",
-                layoutMode === "focus"
-                  ? "max-w-[760px] mx-auto"
-                  : "max-w-[1200px] mx-auto",
-              )}
-            >
-              {messages.map((msg) => {
-                const isUser = msg.role === "user";
-                return (
+          </div>
+        ) : (
+          /* ── Active Conversation Stream (Reading Column) ── */
+          <div className={cn("mx-auto space-y-6 pb-28 pt-2", contentWidthClass)}>
+            {errorBanner && (
+              <div className="flex items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+                <AlertCircle className="size-4 shrink-0" />
+                <span className="flex-1">{errorBanner}</span>
+              </div>
+            )}
+
+            {messages.map((m) => {
+              const isUser = m.role === "user";
+              return (
+                <article
+                  key={m.id}
+                  className={cn(
+                    "group relative flex gap-3 text-sm transition-all",
+                    isUser ? "justify-end" : "justify-start",
+                  )}
+                >
+                  {!isUser && (
+                    <div className="size-7 rounded-full bg-secondary flex items-center justify-center shrink-0 mt-0.5 border border-border/60">
+                      <PoufaEmblem className="size-4.5" />
+                    </div>
+                  )}
+
                   <div
-                    key={msg.id}
                     className={cn(
-                      "flex gap-3",
-                      isUser ? "justify-end" : "justify-start",
+                      "rounded-2xl transition-all",
+                      isUser
+                        ? "max-w-[85%] bg-secondary/80 border border-border/60 px-4 py-3 text-foreground"
+                        : "flex-1 max-w-full px-2 py-1 text-foreground",
                     )}
                   >
-                    {!isUser && <PoufaEmblem className="mt-0.5 size-7" />}
-                    <div
-                      className={cn(
-                        "max-w-[85%] rounded-2xl px-4 py-3",
-                        isUser
-                          ? "bg-primary text-primary-foreground"
-                          : "border border-border bg-background text-foreground",
-                      )}
-                    >
-                      {isUser ? (
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                          {msg.content}
-                        </p>
-                      ) : (
-                        <>
-                          {msg.content ? (
-                            <FormattedMessageContent content={msg.content} />
-                          ) : (
-                            <div className="flex items-center gap-2 py-1 text-xs text-muted-foreground">
-                              <span className="inline-block size-2 animate-pulse rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]" />
-                              Analyse des données de l&apos;exploitation…
-                            </div>
-                          )}
+                    {isUser ? (
+                      <p className="whitespace-pre-wrap leading-relaxed text-sm">
+                        {m.content}
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {m.status === "streaming" && !m.content && (
+                          <div className="flex items-center gap-1.5 py-2 text-xs text-muted-foreground">
+                            <span className="inline-block size-1.5 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)] animate-pulse" />
+                            <span>Réflexion en cours…</span>
+                          </div>
+                        )}
+                        <FormattedMessageContent content={m.content} />
 
-                          {msg.status === "streaming" && msg.content && (
-                            <span
-                              aria-hidden
-                              className="ml-1 inline-block h-3.5 w-1.5 animate-pulse align-middle bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]"
-                            />
-                          )}
+                        {m.status === "complete" && m.content && (
+                          <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => void handleCopy(m.id, m.content)}
+                              className="flex items-center gap-1 hover:text-foreground transition-colors"
+                              title="Copier la réponse"
+                            >
+                              {copiedId === m.id ? (
+                                <>
+                                  <Check className="size-3.5 text-success" />
+                                  <span>Copié</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="size-3.5" />
+                                  <span>Copier</span>
+                                </>
+                              )}
+                            </button>
 
-                          {msg.status !== "streaming" && msg.content && (
-                            <div className="mt-2.5 flex items-center justify-end gap-2 border-t border-border/60 pt-2">
+                            {lastPrompt && (
                               <button
                                 type="button"
-                                onClick={() =>
-                                  void handleCopy(msg.id, msg.content)
-                                }
-                                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                onClick={() => void sendMessage(lastPrompt)}
+                                className="flex items-center gap-1 hover:text-foreground transition-colors"
+                                title="Régénérer la réponse"
                               >
-                                {copiedId === msg.id ? (
-                                  <>
-                                    <Check className="size-3" aria-hidden />
-                                    Copié
-                                  </>
-                                ) : (
-                                  <>
-                                    <Copy className="size-3" aria-hidden />
-                                    Copier
-                                  </>
-                                )}
+                                <RotateCcw className="size-3.5" />
+                                <span>Régénérer</span>
                               </button>
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Error Recovery Banner */}
-        {errorBanner && (
-          <div
-            className={cn(
-              "mx-4 mb-2 flex items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive",
-              layoutMode === "focus"
-                ? "max-w-[760px] mx-auto w-full"
-                : "max-w-[1200px] mx-auto w-full",
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <AlertCircle className="size-4 shrink-0" aria-hidden />
-              <span>{errorBanner}</span>
-            </div>
-            {lastPrompt && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => void sendMessage(lastPrompt)}
-                className="h-7 gap-1 text-xs"
-              >
-                <RotateCcw className="size-3" aria-hidden />
-                Réessayer
-              </Button>
-            )}
+                </article>
+              );
+            })}
           </div>
         )}
+      </div>
 
-        {/* Persistent Bottom Composer */}
-        <footer className="border-t border-border p-3 sm:px-6 sm:py-4">
-          <div
-            className={cn(
-              "flex items-end gap-2.5 rounded-2xl border border-input bg-card px-3.5 py-2.5 shadow-xs transition-all focus-within:border-ring focus-within:ring-1 focus-within:ring-ring",
-              layoutMode === "focus"
-                ? "max-w-[760px] mx-auto"
-                : "max-w-[1200px] mx-auto",
-            )}
-          >
-            <textarea
-              rows={1}
+      {/* ── Anchored Bottom Composer in Active Conversation ── */}
+      {isThreadActive && (
+        <div className="border-t border-border/40 bg-background/95 px-4 pt-3 pb-4 backdrop-blur-sm">
+          <div className={cn("mx-auto", contentWidthClass)}>
+            <PoufaComposer
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Posez une question sur votre élevage à POUFA AI…"
-              aria-label="Message à POUFA AI"
-              className="max-h-36 min-h-[30px] flex-1 resize-none bg-transparent py-1 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
+              onChange={setInput}
+              onSubmit={() => void sendMessage(input)}
+              onStop={handleStop}
+              isStreaming={isStreaming}
+              badgeLabel="Bande active B-2026-014"
             />
-            {isStreaming ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={handleStop}
-                aria-label="Arrêter la génération"
-                className="h-9 shrink-0 gap-1.5 rounded-full px-3.5"
-              >
-                <Square className="size-3 fill-current" aria-hidden />
-                <span className="text-xs">Arrêter</span>
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                size="sm"
-                variant="brand"
-                disabled={!input.trim()}
-                onClick={() => void sendMessage(input)}
-                aria-label="Envoyer le message"
-                className="size-9 shrink-0 rounded-full p-0 flex items-center justify-center transition-transform active:scale-95 disabled:opacity-40 shadow-xs"
-              >
-                <ArrowUp className="size-4 stroke-[2.5]" aria-hidden />
-              </Button>
-            )}
           </div>
-          <div
-            className={cn(
-              "mt-2 flex items-center justify-between px-1 text-[11px] text-muted-foreground",
-              layoutMode === "focus"
-                ? "max-w-[760px] mx-auto"
-                : "max-w-[1200px] mx-auto",
-            )}
-          >
-            <span>
-              Données d&apos;élevage en lecture seule. Ne remplace pas un avis vétérinaire.
-            </span>
-            <span className="hidden sm:inline font-mono text-[10px] text-muted-foreground/60">
-              ↵ Envoyer · ⇧↵ Ligne
-            </span>
-          </div>
-        </footer>
-      </section>
+        </div>
+      )}
     </div>
   );
 }
