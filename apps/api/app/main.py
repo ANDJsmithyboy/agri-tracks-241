@@ -29,11 +29,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Configuration CORS permissive et sécurisée pour Vercel & local
+# Configuration CORS stricte avec allowlist explicite des domaines POUFA
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
-    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

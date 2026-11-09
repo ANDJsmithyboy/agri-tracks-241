@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { POUFA_ANDROID_RELEASE } from "@/lib/android-release";
 
 export async function GET() {
+  const envUrl = process.env.POUFA_ANDROID_APK_URL;
   const downloadUrl =
-    process.env.POUFA_ANDROID_APK_URL || POUFA_ANDROID_RELEASE.url;
+    envUrl && !envUrl.includes("downloads.smartandjai.com") && !envUrl.includes("v0.1")
+      ? envUrl
+      : POUFA_ANDROID_RELEASE.url;
 
   const releaseInfo = {
     appName: "POUFA Android",

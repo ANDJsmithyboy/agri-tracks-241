@@ -14,3 +14,4 @@ export const POUFA_ANDROID_RELEASE = {
   minAndroid: "Android 8.0+ (Oreo, API 26)",
   targetAndroid: "Android 15+ (API 36)",
 } as const;
+
