@@ -120,7 +120,7 @@ export default function TelechargerPage() {
               >
                 <a href="/telecharger/android">
                   <Download className="size-5" />
-                  <span>Télécharger POUFA pour Android (26.55 Mo)</span>
+                  <span>Télécharger POUFA pour Android (27.98 Mo)</span>
                 </a>
               </Button>
               <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground">
