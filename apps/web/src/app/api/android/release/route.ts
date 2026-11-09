@@ -1,48 +1,44 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const r2Url =
+  const downloadUrl =
     process.env.POUFA_ANDROID_APK_URL ||
-    "https://downloads.smartandjai.com/android/poufa-kimba-demo-v0.2.apk";
+    "https://github.com/smartandjai/Agri-track-241/releases/latest/download/POUFA-Android.apk";
 
   const releaseInfo = {
     appName: "POUFA Android",
-    version: "0.2.0-kimba-demo",
-    versionCode: 2,
+    version: "0.3.0-kimba-demo",
+    versionCode: 3,
     packageName: "com.poufa.app",
     releaseDate: "2026-11-09",
-    sizeBytes: 52584395,
-    sizeHuman: "50.15 Mo",
-    sha256: "a96e298215d0576eb925dcb5300f56d31eb64c00b8f220cabfdafc9b1dad759f",
+    sizeBytes: 53924742,
+    sizeHuman: "51.4 Mo",
     minSdkVersion: 26,
     targetSdkVersion: 36,
     ciStatus: "PASSED 100% (GitHub Actions & Local Gradle)",
     ciArtifactUrl: "https://github.com/smartandjai/Agri-track-241/actions",
     distribution: {
-      provider: "Cloudflare R2",
-      bucket: "poufa-releases",
-      objectKey: "android/poufa-kimba-demo-v0.2.apk",
-      r2PublicUrl: r2Url,
+      provider: "GitHub Releases",
+      downloadUrl,
       downloadRoute: "/telecharger/android",
       contentType: "application/vnd.android.package-archive",
-      contentDisposition: 'attachment; filename="POUFA-Android.apk"',
     },
     downloadUrl: "/telecharger/android",
     features: [
+      "Typographie Geist Sans & Mono sur les 57 écrans",
+      "POUFA AI avec rendu Markdown natif (titres, code, listes, gras/italique)",
+      "Mode hors-ligne complet : conversations IA cachées en Room SQLite",
+      "SSE Streaming OkHttp pour les réponses DeepSeek en temps réel",
       "Scanner QR natif CameraX + ML Kit embarqué 100% hors-ligne",
-      "POUFA AI : tiroir de navigation latérale avec historique Neon classé par date",
-      "Clavier adaptatif avec insets automatiques et bouton d'envoi flèche vers le haut [↑]",
-      "Bouton flottant compact POUFA AI sur l'écran d'accueil avec emblème officiel",
-      "Palettes officielles Royal Cream & Obsidian Neon haute lisibilité",
-      "Architecture 100% Offline-First (Room SQLite + WorkManager)"
+      "Tiroir de navigation latéral avec historique classé par date",
+      "Glassmorphism Haze sur le bouton flottant POUFA AI",
+      "Palettes Royal Cream & Obsidian Neon Material 3",
+      "Architecture 100% Offline-First (Room SQLite + WorkManager)",
     ],
-    support: "SmartANDJ AI Technologies SARL — Libreville, Gabon"
+    support: "SmartANDJ AI Technologies SARL — Libreville, Gabon",
   };
 
   return NextResponse.json(releaseInfo, {
-    headers: {
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-    },
+    headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
   });
 }
-

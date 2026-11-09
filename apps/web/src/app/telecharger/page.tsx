@@ -60,7 +60,7 @@ export default function TelechargerPage() {
         </Button>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="font-mono text-xs">
-            Distribution Cloudflare R2
+            GitHub Release
           </Badge>
           <Badge variant="brand" className="text-xs">
             KIMBA 2026
@@ -82,7 +82,7 @@ export default function TelechargerPage() {
               POUFA pour Android — Version Officielle
             </h1>
             <p className="max-w-2xl text-sm text-muted-foreground leading-relaxed">
-              Téléchargement direct depuis notre infrastructure Cloudflare R2 : sans Google Drive, sans compte GitHub et sans archive ZIP. Installez l&apos;APK directement sur votre téléphone.
+              Téléchargement direct depuis GitHub Releases : sans Google Drive, sans compte tiers et sans archive ZIP. Installez l&apos;APK directement sur votre téléphone.
             </p>
           </div>
         </div>
@@ -120,12 +120,12 @@ export default function TelechargerPage() {
               >
                 <a href="/telecharger/android">
                   <Download className="size-5" />
-                  <span>Télécharger POUFA pour Android (27.98 Mo)</span>
+                  <span>Télécharger POUFA pour Android (51.4 Mo)</span>
                 </a>
               </Button>
               <div className="flex items-center justify-between px-1 text-[11px] text-muted-foreground">
                 <span>Format : APK autonome</span>
-                <span>Hébergé sur Cloudflare R2</span>
+                <span>Hébergé sur GitHub Releases</span>
               </div>
             </div>
 
@@ -212,19 +212,19 @@ export default function TelechargerPage() {
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Version de publication</span>
-                <span className="font-mono font-medium">0.1.0-kimba-demo</span>
+                <span className="font-mono font-medium">0.3.0-kimba-demo</span>
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Poids exact</span>
-                <span className="font-mono font-medium">26.55 Mo (27 836 513 octets)</span>
+                <span className="font-mono font-medium">51.4 Mo (53 924 742 octets)</span>
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
                 <span className="text-muted-foreground">Compatibilité minimale</span>
                 <span className="font-medium">Android 8.0+ (Oreo, API 26)</span>
               </div>
               <div className="flex justify-between border-b border-border/60 pb-1.5">
-                <span className="text-muted-foreground">Bucket Cloudflare R2</span>
-                <span className="font-mono font-medium">poufa-releases</span>
+                <span className="text-muted-foreground">Distribution</span>
+                <span className="font-mono font-medium">GitHub Releases</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Somme de contrôle SHA-256</span>
@@ -346,7 +346,7 @@ export default function TelechargerPage() {
         </p>
         <p>
           Développé par <strong>SmartANDJ AI Technologies SARL</strong> (Libreville, Gabon).
-          Distribution Cloudflare R2 haute disponibilité · Pas de dépendance tierce à l&apos;installation.
+          Distribution GitHub Releases · Pas de dépendance tierce à l&apos;installation.
         </p>
       </div>
     </div>
