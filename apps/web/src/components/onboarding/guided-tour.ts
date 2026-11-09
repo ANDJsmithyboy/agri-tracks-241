@@ -1,5 +1,4 @@
 import { driver, type Driver, type DriveStep } from "driver.js";
-import "driver.js/dist/driver.css";
 
 let driverInstance: Driver | null = null;
 

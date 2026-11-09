@@ -99,6 +99,19 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
           <ThemeToggle />
         </div>
 
+        {/* Accès direct Design Lab */}
+        <Button
+          variant="outline"
+          size="sm"
+          asChild
+          className="hidden xl:inline-flex h-8 px-2 text-[11px] font-mono text-muted-foreground hover:text-foreground"
+          title="Consulter le POUFA Design Lab"
+        >
+          <Link href="/design-lab">
+            Design Lab
+          </Link>
+        </Button>
+
         {/* Bouton Visite Guidée */}
         <Button
           variant="ghost"

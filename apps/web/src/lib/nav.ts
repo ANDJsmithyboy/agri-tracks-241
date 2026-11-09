@@ -1,29 +1,43 @@
+import type React from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   BellRing,
-  Bird,
   ClipboardList,
   FileText,
   LayoutDashboard,
   Map,
-  Package,
-  QrCode,
   ScrollText,
   Settings,
   ShieldCheck,
-  Sparkles,
-  Stethoscope,
   Table2,
   Upload,
-  Users,
-  Warehouse,
 } from "lucide-react";
+import {
+  PoufaAiSymbol,
+  PoufaAnalyticsIcon,
+  PoufaFarmIcon,
+  PoufaFlockIcon,
+  PoufaInventoryIcon,
+  PoufaPlacementIcon,
+  PoufaSanitaryIcon,
+  PoufaTeamIcon,
+  PoufaTraceabilityIcon,
+} from "@/components/brand-icons";
 import type { Role } from "./roles";
+
+export type NavItemIcon =
+  | LucideIcon
+  | React.ComponentType<{
+      className?: string;
+      size?: number | string;
+      strokeWidth?: number;
+      "aria-hidden"?: boolean | "true" | "false";
+    }>;
 
 export type NavItem = {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: NavItemIcon;
   /** Rôles autorisés. "all" = tous les rôles connectés. */
   roles: Role[] | "all";
   /** Phase de livraison : MVP obligatoire ou ultérieur. */
@@ -54,7 +68,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Fermes",
         href: "/fermes",
-        icon: Warehouse,
+        icon: PoufaFarmIcon,
         roles: [
           "agriculteur",
           "technicien",
@@ -68,21 +82,21 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Bandes d'élevage",
         href: "/bandes",
-        icon: Bird,
+        icon: PoufaFlockIcon,
         roles: "all",
         phase: "mvp",
       },
       {
         label: "Saisie quotidienne",
         href: "/saisie",
-        icon: ClipboardList,
+        icon: PoufaPlacementIcon,
         roles: ["agriculteur", "technicien", "coordinateur", "administrateur"],
         phase: "mvp",
       },
       {
         label: "Intrants & stocks",
         href: "/intrants",
-        icon: Package,
+        icon: PoufaInventoryIcon,
         roles: ["agriculteur", "technicien", "coordinateur", "administrateur"],
         phase: "mvp",
       },
@@ -94,7 +108,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Santé & déclarations",
         href: "/sante",
-        icon: Stethoscope,
+        icon: PoufaSanitaryIcon,
         roles: [
           "agriculteur",
           "technicien",
@@ -124,7 +138,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Lots",
         href: "/tracabilite",
-        icon: QrCode,
+        icon: PoufaTraceabilityIcon,
         roles: [
           "agriculteur",
           "technicien",
@@ -139,7 +153,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Opérateurs",
         href: "/operateurs",
-        icon: Users,
+        icon: PoufaTeamIcon,
         roles: ["coordinateur", "administrateur"],
         phase: "mvp",
       },
@@ -164,7 +178,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Rapports",
         href: "/rapports",
-        icon: FileText,
+        icon: PoufaAnalyticsIcon,
         roles: [
           "agriculteur",
           "technicien",
@@ -178,7 +192,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "POUFA AI",
         href: "/ia",
-        icon: Sparkles,
+        icon: PoufaAiSymbol,
         roles: "all",
         phase: "mvp",
       },
@@ -190,7 +204,7 @@ export const NAV_GROUPS: NavGroup[] = [
       {
         label: "Utilisateurs & accès",
         href: "/administration/utilisateurs",
-        icon: Users,
+        icon: PoufaTeamIcon,
         roles: ["administrateur"],
         phase: "mvp",
       },

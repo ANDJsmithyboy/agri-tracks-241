@@ -25,6 +25,13 @@ import {
   Trash2,
 } from "lucide-react";
 import { PoufaEmblem } from "@/components/poufa-emblem";
+import {
+  PoufaAiSymbol,
+  PoufaFeedIcon,
+  PoufaFlockIcon,
+  PoufaSanitaryIcon,
+  PoufaWeighingIcon,
+} from "@/components/brand-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -54,21 +61,25 @@ interface ChatMessage {
 
 const SUGGESTED_PROMPTS = [
   {
+    icon: PoufaFlockIcon,
     label: "Analyser ma bande",
     prompt:
       "Résume ma bande en cours avec l'effectif placé, les mortalités, les sorties et l'effectif actuel présent.",
   },
   {
+    icon: PoufaFeedIcon,
     label: "Vérifier mes stocks",
     prompt:
       "Quelles sont mes réceptions d'intrants récentes et l'aliment distribué sur ma bande ?",
   },
   {
+    icon: PoufaWeighingIcon,
     label: "Comprendre mes indicateurs",
     prompt:
       "Quel est mon taux de mortalité, ma viabilité et la dernière pesée enregistrée ?",
   },
   {
+    icon: PoufaSanitaryIcon,
     label: "Consulter mes signalements",
     prompt:
       "Quels signalements sanitaires et quels lots de traçabilité sont enregistrés sur mon exploitation ?",
@@ -638,21 +649,29 @@ export default function PoufaAiPage() {
               </p>
 
               <div className="mt-7 grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2">
-                {SUGGESTED_PROMPTS.map((item) => (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => void sendMessage(item.prompt)}
-                    className="flex flex-col items-start rounded-xl border border-border bg-background/70 px-4 py-3 text-left transition-colors hover:border-primary/40 hover:bg-secondary/60"
-                  >
-                    <span className="text-xs font-medium text-foreground">
-                      {item.label}
-                    </span>
-                    <span className="mt-1 line-clamp-2 text-[11px] text-muted-foreground">
-                      {item.prompt}
-                    </span>
-                  </button>
-                ))}
+                {SUGGESTED_PROMPTS.map((item) => {
+                  const PromptIcon = item.icon;
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => void sendMessage(item.prompt)}
+                      className="group flex flex-col items-start rounded-xl border border-border bg-card/60 p-3.5 text-left transition-all hover:border-[var(--brand-green)] dark:hover:border-[var(--brand-neon)] hover:bg-secondary/40 shadow-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="flex size-6 items-center justify-center rounded-md border border-border bg-secondary/50 text-foreground group-hover:text-[var(--brand-green)] dark:group-hover:text-[var(--brand-neon)]">
+                          <PromptIcon size={14} strokeWidth={1.75} />
+                        </div>
+                        <span className="text-xs font-semibold text-foreground">
+                          {item.label}
+                        </span>
+                      </div>
+                      <span className="mt-2 line-clamp-2 text-[11px] text-muted-foreground leading-relaxed">
+                        {item.prompt}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ) : (
