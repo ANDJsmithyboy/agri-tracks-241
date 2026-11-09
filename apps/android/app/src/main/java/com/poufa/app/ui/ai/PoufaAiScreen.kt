@@ -1,5 +1,8 @@
 package com.poufa.app.ui.ai
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -7,11 +10,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.History
@@ -22,9 +26,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -72,6 +78,7 @@ fun PoufaAiScreen(
     var lastPrompt by remember { mutableStateOf<String?>(null) }
     var showHistorySheet by remember { mutableStateOf(false) }
     var streamingJob by remember { mutableStateOf<Job?>(null) }
+    var copyNotice by remember { mutableStateOf<String?>(null) }
 
     val listState = rememberLazyListState()
 
@@ -96,7 +103,7 @@ fun PoufaAiScreen(
         val text = rawText.trim()
         if (text.isEmpty() || isStreaming) return
         if (!isOnline) {
-            errorMessage = "Hors connexion — votre texte est conservé. Reconnectez-vous pour interroger POUFA AI."
+            errorMessage = "Hors connexion — votre question est conservée. Reconnectez-vous pour interroger POUFA AI."
             return
         }
 
@@ -135,7 +142,7 @@ fun PoufaAiScreen(
                 messages = messages.map { m ->
                     if (m.id == assistantMsgId) {
                         m.copy(
-                            content = m.content.ifBlank { "Génération interrompue." },
+                            content = m.content.ifBlank { "Génération interrompue par l'utilisateur." },
                             status = "complete",
                         )
                     } else m
@@ -157,6 +164,7 @@ fun PoufaAiScreen(
         }
     }
 
+    // Modal Bottom Sheet pour l'historique des conversations
     if (showHistorySheet) {
         ModalBottomSheet(onDismissRequest = { showHistorySheet = false }) {
             Column(
@@ -169,7 +177,7 @@ fun PoufaAiScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("Conversations", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("Historique des échanges", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     TextButton(onClick = {
                         streamingJob?.cancel()
                         activeConversationId = null
@@ -179,16 +187,16 @@ fun PoufaAiScreen(
                     }) {
                         Icon(Icons.Filled.Add, null, Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Nouvelle")
+                        Text("Nouvelle discussion")
                     }
                 }
                 Spacer(Modifier.height(8.dp))
                 if (conversations.isEmpty()) {
                     Text(
-                        "Aucune conversation enregistrée.",
+                        "Aucune conversation archivée sur ce compte.",
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 20.dp),
+                        modifier = Modifier.padding(vertical = 24.dp),
                     )
                 } else {
                     conversations.forEach { conv ->
@@ -208,7 +216,7 @@ fun PoufaAiScreen(
                                             }
                                     }
                                 }
-                                .padding(vertical = 10.dp, horizontal = 8.dp),
+                                .padding(vertical = 12.dp, horizontal = 10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -216,6 +224,7 @@ fun PoufaAiScreen(
                                 conv.title,
                                 fontSize = 14.sp,
                                 fontWeight = if (conv.id == activeConversationId) FontWeight.SemiBold else FontWeight.Normal,
+                                color = if (conv.id == activeConversationId) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.weight(1f),
                             )
                             IconButton(onClick = {
@@ -238,136 +247,197 @@ fun PoufaAiScreen(
         }
     }
 
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        // Header
+    // ── Layout Principal avec gestion stricte des Insets & Clavier ───────────
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .statusBarsPadding(),
+    ) {
+        // En-tête officiel POUFA AI
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
             }
-            PoufaEmblem(size = 28.dp)
-            Spacer(Modifier.width(8.dp))
+            PoufaEmblem(size = 32.dp)
+            Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
-                Text("POUFA AI", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text("POUFA AI", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                 Text(
-                    farmLabel ?: "Votre assistant pour le suivi avicole.",
+                    farmLabel ?: "Assistant pour le suivi avicole national",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
                 )
             }
-            IconButton(onClick = {
-                streamingJob?.cancel()
-                activeConversationId = null
-                messages = emptyList()
-                errorMessage = null
-            }) {
-                Icon(Icons.Filled.Add, "Nouvelle conversation")
-            }
-            IconButton(onClick = {
-                refreshConversations()
-                showHistorySheet = true
-            }) {
-                Icon(Icons.Filled.History, "Historique")
+            IconButton(onClick = { showHistorySheet = true }) {
+                Icon(Icons.Filled.History, contentDescription = "Historique", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-        if (!isOnline) {
-            Box(Modifier.padding(horizontal = PoufaPagePadding, vertical = 8.dp)) {
-                PoufaOfflineBanner()
-            }
-        }
-
-        // Messages or Welcome State
-        if (messages.isEmpty()) {
-            LazyColumn(
-                Modifier.weight(1f).fillMaxWidth(),
-                contentPadding = PaddingValues(PoufaPagePadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                item {
-                    PoufaEmblem(size = 56.dp)
-                    Spacer(Modifier.height(12.dp))
-                    Text("POUFA AI", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        "Votre assistant pour le suivi avicole.",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(24.dp))
-                }
-                items(SUGGESTED_PROMPTS) { (title, prompt) ->
-                    PoufaCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 5.dp)
-                            .clickable(enabled = isOnline) { sendMessage(prompt) },
-                        contentPadding = PaddingValues(14.dp),
+        // Zone de discussion scrollable
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            if (messages.isEmpty()) {
+                // Écran d'accueil conversationnel avec suggestions
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Box(
+                        Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            prompt,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        PoufaEmblem(size = 38.dp)
+                    }
+                    Spacer(Modifier.height(14.dp))
+                    Text(
+                        text = "Bienvenue sur POUFA AI",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = "Posez vos questions sur vos bandes, la mortalité, les pesées et les stocks d'intrants.",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp,
+                    )
+                    Spacer(Modifier.height(28.dp))
+
+                    Text(
+                        "Suggestions d'analyse :",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.align(Alignment.Start),
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    SUGGESTED_PROMPTS.forEach { (title, prompt) ->
+                        Surface(
+                            onClick = { sendMessage(prompt) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f),
+                            ),
+                        ) {
+                            Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                                Text(
+                                    title,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                Text(
+                                    prompt,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 2,
+                                )
+                            }
+                        }
                     }
                 }
-            }
-        } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                contentPadding = PaddingValues(PoufaPagePadding),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(messages, key = { it.id }) { msg ->
-                    val isUser = msg.role == "user"
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start,
-                    ) {
+            } else {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    items(messages, key = { it.id }) { msg ->
+                        val isUser = msg.role == "user"
                         Column(
-                            Modifier
-                                .widthIn(max = 310.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(
-                                    if (isUser) PoufaPrimary else MaterialTheme.colorScheme.surfaceContainerLowest,
-                                )
-                                .border(
-                                    width = if (isUser) 0.dp else 1.dp,
-                                    color = if (isUser) PoufaPrimary else MaterialTheme.colorScheme.outlineVariant,
-                                    shape = RoundedCornerShape(16.dp),
-                                )
-                                .padding(14.dp),
+                            Modifier.fillMaxWidth(),
+                            horizontalAlignment = if (isUser) Alignment.End else Alignment.Start,
                         ) {
-                            Text(
-                                text = msg.content.ifEmpty {
-                                    if (msg.status == "streaming") "Analyse des données de l'exploitation…" else ""
-                                },
-                                fontSize = 14.sp,
-                                color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                            )
-                            if (!isUser && msg.status != "streaming" && msg.content.isNotBlank()) {
-                                Spacer(Modifier.height(6.dp))
+                            if (!isUser) {
                                 Row(
-                                    Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(bottom = 4.dp),
+                                ) {
+                                    PoufaEmblem(size = 18.dp)
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        "POUFA AI",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                            }
+
+                            Box(
+                                Modifier
+                                    .widthIn(max = 320.dp)
+                                    .clip(
+                                        RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            topEnd = 16.dp,
+                                            bottomStart = if (isUser) 16.dp else 4.dp,
+                                            bottomEnd = if (isUser) 4.dp else 16.dp,
+                                        )
+                                    )
+                                    .background(
+                                        if (isUser) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.surfaceContainerLowest
+                                    )
+                                    .border(
+                                        width = if (isUser) 0.dp else 1.dp,
+                                        color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.outlineVariant,
+                                        shape = RoundedCornerShape(16.dp),
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                            ) {
+                                Text(
+                                    text = msg.content.ifEmpty {
+                                        if (msg.status == "streaming") "Analyse des indicateurs zootechniques…" else ""
+                                    },
+                                    fontSize = 14.sp,
+                                    lineHeight = 20.sp,
+                                    color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+
+                            if (!isUser && msg.status != "streaming" && msg.content.isNotBlank()) {
+                                Row(
+                                    modifier = Modifier.padding(top = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     TextButton(
-                                        onClick = { clipboard.setText(AnnotatedString(msg.content)) },
-                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                        onClick = {
+                                            clipboard.setText(AnnotatedString(msg.content))
+                                            copyNotice = "Réponse copiée"
+                                            scope.launch {
+                                                kotlinx.coroutines.delay(2000)
+                                                copyNotice = null
+                                            }
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp),
                                     ) {
-                                        Icon(Icons.Filled.ContentCopy, null, Modifier.size(14.dp))
+                                        Icon(Icons.Filled.ContentCopy, contentDescription = null, Modifier.size(13.dp))
                                         Spacer(Modifier.width(4.dp))
-                                        Text("Copier", fontSize = 11.sp)
+                                        Text(copyNotice ?: "Copier", fontSize = 11.sp)
                                     }
                                 }
                             }
@@ -377,13 +447,13 @@ fun PoufaAiScreen(
             }
         }
 
-        // Error Banner with Retry
-        if (errorMessage != null) {
+        // Bannière d'erreur éventuelle
+        AnimatedVisibility(visible = errorMessage != null) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = PoufaPagePadding, vertical = 6.dp)
-                    .background(PoufaWarningBg, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .background(MaterialTheme.colorScheme.errorContainer, RoundedCornerShape(10.dp))
                     .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -391,49 +461,103 @@ fun PoufaAiScreen(
                 Text(
                     errorMessage ?: "",
                     fontSize = 12.sp,
-                    color = PoufaInk,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.weight(1f),
                 )
                 if (lastPrompt != null && isOnline) {
                     IconButton(onClick = { lastPrompt?.let { sendMessage(it) } }) {
-                        Icon(Icons.Filled.Refresh, "Réessayer", tint = PoufaPrimary)
+                        Icon(Icons.Filled.Refresh, contentDescription = "Réessayer", tint = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
         }
 
-        // Composer
-        Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest, tonalElevation = 2.dp) {
+        // ── Composer ancré AU-DESSUS du clavier grâce à imePadding() ─────────
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 3.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .imePadding()
+                .navigationBarsPadding(),
+        ) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.Bottom,
             ) {
                 OutlinedTextField(
                     value = input,
                     onValueChange = { input = it },
-                    placeholder = { Text("Posez une question à POUFA AI…") },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(14.dp),
+                    placeholder = {
+                        Text(
+                            "Posez une question à POUFA AI…",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        )
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = 44.dp, max = 130.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    ),
                     maxLines = 4,
                 )
+
                 Spacer(Modifier.width(8.dp))
-                if (isStreaming) {
-                    FilledTonalIconButton(onClick = { streamingJob?.cancel() }) {
-                        Icon(Icons.Filled.Stop, "Arrêter")
-                    }
-                } else {
-                    FilledIconButton(
-                        onClick = { sendMessage(input) },
-                        enabled = input.isNotBlank() && isOnline,
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, "Envoyer")
+
+                // Bouton d'action circulaire : flèche vers le haut [↑] ou arrêt carré [■]
+                val isSendEnabled = input.isNotBlank() && isOnline
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(
+                            when {
+                                isStreaming -> MaterialTheme.colorScheme.errorContainer
+                                isSendEnabled -> MaterialTheme.colorScheme.primary
+                                else -> MaterialTheme.colorScheme.surfaceVariant
+                            }
+                        )
+                        .clickable(
+                            enabled = isStreaming || isSendEnabled,
+                            onClick = {
+                                if (isStreaming) {
+                                    streamingJob?.cancel()
+                                } else {
+                                    sendMessage(input)
+                                }
+                            },
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (isStreaming) {
+                        Icon(
+                            imageVector = Icons.Filled.Stop,
+                            contentDescription = "Arrêter la génération",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onErrorContainer,
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowUpward,
+                            contentDescription = "Envoyer vers POUFA AI",
+                            modifier = Modifier.size(20.dp),
+                            tint = if (isSendEnabled) {
+                                MaterialTheme.colorScheme.onPrimary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f)
+                            },
+                        )
                     }
                 }
             }
         }
     }
 }
-

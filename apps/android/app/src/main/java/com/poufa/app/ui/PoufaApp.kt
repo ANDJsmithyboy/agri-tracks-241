@@ -84,6 +84,13 @@ fun PoufaApp() {
     val showBottomBar = topDests.any { currentRoute.startsWith(it.route) }
 
     Scaffold(
+        floatingActionButton = {
+            if (currentRoute == "home") {
+                FloatingPoufaAiButton(
+                    onClick = { navController.navigate("poufa_ai") },
+                )
+            }
+        },
         bottomBar = {
             if (showBottomBar) PoufaBottomNav(currentRoute) {
                 navController.navigate(it) {
@@ -116,6 +123,7 @@ fun PoufaApp() {
             composable("farm/{farmId}/contacts") { ContactsRoute(navController) }
             composable("farm/{farmId}/lots") { LotsRoute(navController) }
             composable("farm/{farmId}/lots/lookup") { LotLookupRoute(navController) }
+            composable("farm/{farmId}/lots/scanner") { LotScannerRoute(navController) }
             composable("farm/{farmId}/lots/result") { LotResultRoute(navController) }
             composable("farm/{farmId}/transfer/new") { TransferWizardRoute(navController) }
             composable("farm/{farmId}/ma-ferme") { MyFarmRoute(navController) }
@@ -809,7 +817,7 @@ private fun LotsRoute(nav: NavHostController) {
         farmLabel = farm?.name ?: "",
         lots = lots.map { LotRowData(it.id, it.displayCode ?: it.provisionalCode ?: "Lot", "Bande · ${it.quantity} animaux", !it.isProvisional) },
         query = query, onQueryChange = { query = it },
-        onScan = { nav.navigate("farm/$farmId/lots/lookup") },
+        onScan = { nav.navigate("farm/$farmId/lots/scanner") },
         onOpenLot = { id -> nav.navigate("lots/$id/label") },
         onNewTransfer = { nav.navigate("farm/$farmId/transfer/new") },
         onBack = { nav.popBackStack() },
@@ -827,8 +835,24 @@ private fun LotLookupRoute(nav: NavHostController) {
             recent.add(0, code); if (recent.size > 5) recent.removeAt(recent.lastIndex)
             nav.navigate("farm/$farmId/lots/result?code=${java.net.URLEncoder.encode(code, "UTF-8")}")
         },
-        onScan = { /* CameraX — batch runtime */ },
+        onScan = { nav.navigate("farm/$farmId/lots/scanner") },
         onRecent = { code -> nav.navigate("farm/$farmId/lots/result?code=${java.net.URLEncoder.encode(code, "UTF-8")}") },
+    )
+}
+
+@Composable
+private fun LotScannerRoute(nav: NavHostController) {
+    val farmId = farmArg(nav) ?: return
+    QrScannerScreen(
+        onBack = { nav.popBackStack() },
+        onCodeScanned = { code ->
+            nav.popBackStack()
+            nav.navigate("farm/$farmId/lots/result?code=${java.net.URLEncoder.encode(code, "UTF-8")}")
+        },
+        onManualEntry = {
+            nav.popBackStack()
+            nav.navigate("farm/$farmId/lots/lookup")
+        },
     )
 }
 
@@ -1081,6 +1105,7 @@ private fun HealthFormRoute(nav: NavHostController) {
     HealthDeclarationFormScreen(
         bandLabel = b.displayCode ?: "Bande", population = pop, photoCount = pendingPhotos.size,
         onBack = { nav.popBackStack() },
+        onAddPhoto = { photoPicker.launch("image/*") },
         onSave = { type, signs, affected, notes, _ ->
             kotlinx.coroutines.MainScope().launch {
                 val validPhotos = pendingPhotos.filter { com.poufa.app.data.PhotoStore.exists(it.filePath) }

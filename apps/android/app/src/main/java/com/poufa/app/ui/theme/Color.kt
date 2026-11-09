@@ -2,34 +2,56 @@ package com.poufa.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ── Tokens exacts extraits des maquettes Android (batch 01) ──────────────
-// Le #176B45 du design system web reste un token de marque secondaire.
-val PoufaBg = Color(0xFFF7F8F5)          // fond principal
-val PoufaPrimary = Color(0xFF245747)     // vert principal maquettes
-val PoufaInk = Color(0xFF20332C)         // texte foncé
-val PoufaSoftGreen = Color(0xFFEDF4EE)   // surface verte
-val PoufaNeutralSelected = Color(0xFFEAEDE9) // contrôle sélectionné
-val PoufaNeutralInfo = Color(0xFFEFF1EE) // surface neutre info
-val PoufaCard = Color(0xFFFFFFFF)        // cartes blanches
-val PoufaWarningBg = Color(0xFFFBF5E5)   // alerte douce
-val PoufaWarningAccent = Color(0xFFE5BC55) // jaune accent
-val PoufaSecondaryText = Color(0xFF5E6963)
-val PoufaBorder = Color(0xFFC9D0CB)      // bordure input
-val PoufaBrandGold = Color(0xFFE5BC55)   // carré or après le wordmark
-val PoufaGold = PoufaBrandGold
+// ── POUFA Design System 2026 — Dual Material Palette ─────────────────────────
 
-// Sémantiques dérivées du système POUFA (accessibilité testée)
-val PoufaSuccess = Color(0xFF1E7A4C)
-val PoufaCritical = Color(0xFFC63838)
-val PoufaInfo = Color(0xFF3172C7)
+// ── Theme A: Royal Cream (Apple-inspired Editorial Workspace) ────────────────
+val RoyalCanvas = Color(0xFFF5F0E7)
+val RoyalSurface = Color(0xFFFFFCF7)
+val RoyalSecondary = Color(0xFFEEE7DC)
+val RoyalText = Color(0xFF28251F)
+val RoyalMuted = Color(0xFF777168)
+val RoyalBorder = Color(0xFFE4DCCE)
+val RoyalBrandGreen = Color(0xFF245747)
+val RoyalAntiqueGold = Color(0xFFA18152)
 
-// Thème sombre — Gemini-inspired graphite (Design System 2026 § 4.2)
-val PoufaBgDark = Color(0xFF121514)
-val PoufaPrimaryDark = Color(0xFF80B69A)
-val PoufaInkDark = Color(0xFFF2F3EE)
-val PoufaSoftGreenDark = Color(0xFF222B25)
-val PoufaNeutralDark = Color(0xFF202522)
-val PoufaCardDark = Color(0xFF1B201D)
-val PoufaWarningBgDark = Color(0xFF2E2716)
-val PoufaSecondaryTextDark = Color(0xFFA9B4AD)
-val PoufaBorderDark = Color(0xFF353E38)
+// Mappings sémantiques Royal Cream
+val PoufaBg = RoyalCanvas
+val PoufaCard = RoyalSurface
+val PoufaPrimary = RoyalBrandGreen
+val PoufaInk = RoyalText
+val PoufaSecondaryText = RoyalMuted
+val PoufaBorder = RoyalBorder
+val PoufaSoftGreen = Color(0xFFE9F1EC)
+val PoufaNeutralSelected = RoyalSecondary
+val PoufaNeutralInfo = Color(0xFFEFE9DF)
+val PoufaBrandGold = RoyalAntiqueGold
+val PoufaGold = RoyalAntiqueGold
+
+// ── Theme B: Obsidian Neon (Vercel-inspired Graphite Workspace) ──────────────
+val ObsidianCanvas = Color(0xFF0B0D10)
+val ObsidianSurface = Color(0xFF17191D)
+val ObsidianElevated = Color(0xFF202329)
+val ObsidianText = Color(0xFFF3F0E9)
+val ObsidianMuted = Color(0xFFA3A5AA)
+val ObsidianBorder = Color(0xFF30343A)
+val ObsidianNeon = Color(0xFFB9F27C)
+val ObsidianSoftGreen = Color(0xFF8BC49B)
+val ObsidianWarmAccent = Color(0xFFC6A778)
+
+// Mappings sémantiques Obsidian Neon
+val PoufaBgDark = ObsidianCanvas
+val PoufaCardDark = ObsidianSurface
+val PoufaPrimaryDark = ObsidianSoftGreen
+val PoufaInkDark = ObsidianText
+val PoufaSecondaryTextDark = ObsidianMuted
+val PoufaBorderDark = ObsidianBorder
+val PoufaSoftGreenDark = Color(0xFF1E2822)
+val PoufaNeutralDark = ObsidianElevated
+
+// Sémantiques opérationnelles (alertes, succès, validation)
+val PoufaSuccess = Color(0xFF2E8555)
+val PoufaCritical = Color(0xFFD64545)
+val PoufaInfo = Color(0xFF3B82F6)
+val PoufaWarningBg = Color(0xFFFFF7ED)
+val PoufaWarningBgDark = Color(0xFF2C2216)
+val PoufaWarningAccent = Color(0xFFEAB308)
