@@ -34,7 +34,7 @@ fun ConfirmReceiptScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Confirmer la réception", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Confirmer la réception", style = MaterialTheme.typography.displaySmall)
             Text(productName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
             PoufaCard {
@@ -72,7 +72,7 @@ fun RecordUsageScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Enregistrer une utilisation", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Enregistrer une utilisation", style = MaterialTheme.typography.displaySmall)
             Spacer(Modifier.height(20.dp))
             PoufaCard {
                 PoufaListRow("Intrant", subtitle = productName, trailing = { Text(availableStock, fontWeight = FontWeight.SemiBold) })
@@ -101,7 +101,7 @@ fun FeedStockDetailScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text(productName, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(productName, style = MaterialTheme.typography.displaySmall)
         Text("Stock · $farmLabel", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         PoufaCard(containerColor = PoufaSoftGreen) {
@@ -150,7 +150,7 @@ fun CreateReceiptScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Nouvelle réception", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Nouvelle réception", style = MaterialTheme.typography.displaySmall)
             Spacer(Modifier.height(20.dp))
             Text("Type d'intrant", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -25,7 +25,7 @@ fun MyFarmScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text(farmName, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(farmName, style = MaterialTheme.typography.displaySmall)
         Text("$locality · $farmType", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         PoufaCard {
@@ -57,7 +57,7 @@ data class TeamMember(val name: String, val role: String, val permissions: Strin
 fun FarmTeamScreen(farmName: String, members: List<TeamMember>, onBack: () -> Unit, onInvite: () -> Unit) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Équipe", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Équipe", style = MaterialTheme.typography.displaySmall)
         Text(farmName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         PoufaCard(contentPadding = PaddingValues(0.dp)) {
@@ -87,7 +87,7 @@ fun RemindersScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Rappels", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Rappels", style = MaterialTheme.typography.displaySmall)
         Text("Notifications sur ce téléphone", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         PoufaCard(contentPadding = PaddingValues(0.dp)) {
@@ -115,7 +115,7 @@ data class AppNotification(val id: String, val title: String, val body: String, 
 fun NotificationsScreen(farmName: String, today: List<AppNotification>, week: List<AppNotification>, onBack: () -> Unit, onOpen: (String) -> Unit = {}) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Notifications", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Notifications", style = MaterialTheme.typography.displaySmall)
         Text(farmName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         if (today.isNotEmpty()) {
@@ -154,7 +154,7 @@ fun DataSynchronizationScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Données et synchronisation", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Données et synchronisation", style = MaterialTheme.typography.displaySmall)
         Text(farmName, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         PoufaCard {
@@ -206,7 +206,7 @@ fun SettingsScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Paramètres", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Paramètres", style = MaterialTheme.typography.displaySmall)
         Text("Application POUFA", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         Text("Apparence", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 10.dp))
@@ -245,7 +245,7 @@ fun HelpScreen(faqs: List<FaqItem>, onBack: () -> Unit, onContacts: () -> Unit) 
     val filtered = faqs.filter { query.isBlank() || it.q.contains(query, true) || it.a.contains(query, true) }
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Aide", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Aide", style = MaterialTheme.typography.displaySmall)
         Text("Questions fréquentes", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
         OutlinedTextField(value = query, onValueChange = { query = it }, placeholder = { Text("Rechercher dans l'aide") }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp))

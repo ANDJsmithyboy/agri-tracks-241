@@ -25,7 +25,7 @@ data class BuildingRowData(val id: String, val name: String, val capacity: Int, 
 fun BuildingsScreen(farmLabel: String, buildings: List<BuildingRowData>, onBack: () -> Unit, onAdd: () -> Unit, onOpen: (String) -> Unit = {}) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Bâtiments", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Bâtiments", style = MaterialTheme.typography.displaySmall)
         Text(farmLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         PoufaCard(contentPadding = PaddingValues(0.dp)) {
@@ -69,7 +69,7 @@ fun CreateBandStepOneScreen(
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
             com.poufa.app.ui.traceability.ProgressHeader("Étape 1 sur 2", "Poussins", 0.5f)
             Spacer(Modifier.height(20.dp))
-            Text("Nouvelle bande", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Nouvelle bande", style = MaterialTheme.typography.displaySmall)
             Text(farmLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
             PoufaCard { PoufaListRow("Date de mise en place", subtitle = "Aujourd'hui") }
@@ -103,7 +103,7 @@ fun CreateBandStepTwoScreen(
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
             com.poufa.app.ui.traceability.ProgressHeader("Étape 2 sur 2", "Bâtiment et origine", 1f)
             Spacer(Modifier.height(20.dp))
-            Text("Nouvelle bande", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Nouvelle bande", style = MaterialTheme.typography.displaySmall)
             Text(farmLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
             Text("Bâtiment", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
@@ -148,7 +148,7 @@ fun CreateBandReviewScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Vérifiez la bande", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Vérifiez la bande", style = MaterialTheme.typography.displaySmall)
             Text(farmLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
             PoufaCard {
@@ -179,7 +179,7 @@ fun DailyRecordDetailScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text(record.dateLabel, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(record.dateLabel, style = MaterialTheme.typography.displaySmall)
         Spacer(Modifier.height(20.dp))
         PoufaCard {
             PoufaListRow("Animaux morts", trailing = { Text("${record.deaths ?: 0}", fontWeight = FontWeight.SemiBold) })

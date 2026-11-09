@@ -21,15 +21,17 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.hazeEffect
 
 /**
- * Accès flottant compact à POUFA AI sur l'écran d'accueil.
- * Arbore l'emblème officiel POUFA dans une surface circulaire premium (56dp).
+ * Accès flottant compact à POUFA AI — surface circulaire 56dp avec glassmorphism Haze.
  */
 @Composable
 fun FloatingPoufaAiButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    hazeState: HazeState? = null,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -50,7 +52,7 @@ fun FloatingPoufaAiButton(
             )
             .semantics { contentDescription = "Ouvrir POUFA AI" },
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = if (hazeState != null) 0.75f else 1f),
         border = BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f),
@@ -60,6 +62,10 @@ fun FloatingPoufaAiButton(
         Box(
             modifier = Modifier
                 .size(56.dp)
+                .then(
+                    if (hazeState != null) Modifier.hazeEffect(hazeState) { blurRadius = 16.dp }
+                    else Modifier
+                )
                 .clickable(
                     interactionSource = interactionSource,
                     indication = null,
@@ -71,4 +77,3 @@ fun FloatingPoufaAiButton(
         }
     }
 }
-

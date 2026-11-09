@@ -28,7 +28,7 @@ fun MedicalInventoryScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Vaccins et médicaments", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Vaccins et médicaments", style = MaterialTheme.typography.displaySmall)
         Text("Stock · $farmLabel", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         PoufaCard(contentPadding = PaddingValues(0.dp)) {
@@ -75,7 +75,7 @@ fun HealthDeclarationsScreen(
     )
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Signalements sanitaires", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Signalements sanitaires", style = MaterialTheme.typography.displaySmall)
         Text(farmLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         if (declarations.isEmpty()) {
@@ -122,7 +122,7 @@ fun HealthProblemTypeSheet(
     )
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 32.dp)) {
-            Text("Type de problème", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+            Text("Type de problème", style = MaterialTheme.typography.headlineMedium)
             Spacer(Modifier.height(16.dp))
             types.forEach { (v, l) ->
                 PoufaSelectionChip(l, selected == v) { onSelect(v) }
@@ -170,7 +170,7 @@ fun HealthDeclarationFormScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Signalement sanitaire", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Signalement sanitaire", style = MaterialTheme.typography.displaySmall)
             Text(bandLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
 
@@ -243,7 +243,7 @@ fun HealthDeclarationDetailScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text(problemLabel, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(problemLabel, style = MaterialTheme.typography.displaySmall)
         Text(bandLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
         PoufaStatusChip(statusLabel, bg = if (statusIsPending) PoufaWarningBg else PoufaSoftGreen,
@@ -306,7 +306,7 @@ fun HealthDeclarationSuccessScreen(
             Icon(Icons.Filled.MedicalServices, null, Modifier.size(44.dp), tint = PoufaPrimary)
         }
         Spacer(Modifier.height(20.dp))
-        Text("Signalement enregistré", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Signalement enregistré", style = MaterialTheme.typography.displaySmall)
         Text("Il sera transmis aux services vétérinaires au retour du réseau.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
         PoufaStatusChip("En attente d'envoi", bg = PoufaWarningBg, color = Color(0xFF8A6D1A))

@@ -50,7 +50,7 @@ fun CloseBandScreen(
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Clôturer la bande", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Clôturer la bande", style = MaterialTheme.typography.displaySmall)
             Text("$bandLabel · Jour $dayCount", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
 
@@ -111,7 +111,7 @@ fun ClosedBandSummaryScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text(bandLabel, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(bandLabel, style = MaterialTheme.typography.displaySmall)
         Text("$farmLabel · Clôturée · $durationDays jours", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
 

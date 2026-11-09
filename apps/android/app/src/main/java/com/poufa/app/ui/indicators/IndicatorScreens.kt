@@ -46,7 +46,7 @@ fun TechnicalIndicatorsScreen(data: IndicatorsData, onBack: () -> Unit) {
         Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding),
     ) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Indicateurs techniques", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Indicateurs techniques", style = MaterialTheme.typography.displaySmall)
         Text("${data.bandLabel} · ${data.farmLabel}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
 
@@ -184,7 +184,7 @@ fun AddWeighingScreen(
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Ajouter une pesée", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Ajouter une pesée", style = MaterialTheme.typography.displaySmall)
             Text(bandLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
 
@@ -217,7 +217,7 @@ fun AddWeighingScreen(
                         Text("Poids moyen", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         Text("Calculé à partir des deux champs", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Text(avg?.let { fmtKg(it) } ?: "—", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = PoufaPrimary)
+                    Text(avg?.let { fmtKg(it) } ?: "—", style = MaterialTheme.typography.displaySmall, color = PoufaPrimary)
                 }
             }
         }

@@ -73,7 +73,7 @@ fun DailyEntryScreen(
             Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding),
         ) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Saisie de la journée", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Saisie de la journée", style = MaterialTheme.typography.displaySmall)
             Text("$bandLabel · $farmLabel", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
 
@@ -146,7 +146,7 @@ fun DailyEntrySuccessScreen(
                 contentAlignment = Alignment.Center,
             ) { Icon(Icons.Filled.Check, null, Modifier.size(44.dp), tint = PoufaPrimary) }
             Spacer(Modifier.height(20.dp))
-            Text("Journée enregistrée", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Journée enregistrée", style = MaterialTheme.typography.displaySmall)
             Text(bandLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(28.dp))
 

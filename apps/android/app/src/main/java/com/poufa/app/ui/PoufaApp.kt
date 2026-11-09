@@ -274,7 +274,7 @@ private fun HomeRoute(nav: NavHostController) {
                         PoufaStatusChip("Jour ${s.dayCount}")
                     }
                     Spacer(Modifier.height(8.dp))
-                    Text("Bande", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                    Text("Bande", style = MaterialTheme.typography.headlineMedium)
                     Text(s.population?.toString() ?: "—", fontSize = 52.sp, fontWeight = FontWeight.Bold, color = PoufaPrimary)
                     Text("animaux présents", fontSize = 14.sp, color = PoufaSecondaryText)
                     TextButton(onClick = { nav.navigate("band/${band.id}") }) { Text("Voir la bande →", color = PoufaPrimary, fontWeight = FontWeight.Medium) }
@@ -451,7 +451,7 @@ private fun BandDetailRoute(nav: NavHostController) {
 
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text(s.band?.let { "Bande ${it.id.take(4)}" } ?: "Bande", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(s.band?.let { "Bande ${it.id.take(4)}" } ?: "Bande", style = MaterialTheme.typography.displaySmall)
         Text(s.farmName ?: "", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(12.dp))
         PoufaSegmentedTabs(listOf("Suivi", "Pesées", "Sorties"), tab, { tab = it })
@@ -1262,7 +1262,7 @@ private fun StockRoute(nav: NavHostController) {
     if (p == null) {
         Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Stock", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Stock", style = MaterialTheme.typography.displaySmall)
             Text(farm?.name ?: "", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
             products.forEach { prod ->
@@ -1423,7 +1423,7 @@ private fun BandRecordsRoute(nav: NavHostController) {
     val records by ServiceLocator.database.dailyRecordDao().observeForBand(bandId).collectAsStateWithLifecycle(initialValue = emptyList())
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = { nav.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Historique", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Historique", style = MaterialTheme.typography.displaySmall)
         Spacer(Modifier.height(16.dp))
         if (records.isEmpty()) PoufaEmptyState("Aucune saisie", "Les journées apparaîtront ici.")
         records.forEach { r ->

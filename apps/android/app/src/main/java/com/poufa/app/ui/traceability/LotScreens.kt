@@ -34,7 +34,7 @@ fun CreateTransferStepOneScreen(
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
             ProgressHeader("Étape 1 sur 2", "Détails", 0.5f)
             Spacer(Modifier.height(20.dp))
-            Text("Nouvelle cession", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Nouvelle cession", style = MaterialTheme.typography.displaySmall)
             Text(farmLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
             PoufaFormField("Bande d'origine", bands.firstOrNull { it.first == bandId }?.second ?: "", { })
@@ -77,7 +77,7 @@ fun CreateTransferReviewScreen(
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
             ProgressHeader("Étape 2 sur 2", "Vérification", 1f)
             Spacer(Modifier.height(20.dp))
-            Text("Vérifiez la cession", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Vérifiez la cession", style = MaterialTheme.typography.displaySmall)
             Text(farmLabelOf(bandLabel), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
             PoufaCard {
@@ -128,7 +128,7 @@ fun LotLabelPreviewScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Aperçu de l'étiquette", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Aperçu de l'étiquette", style = MaterialTheme.typography.displaySmall)
             Text("Lot $lotCode", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
 
@@ -183,7 +183,7 @@ fun LotLookupScreen(
     var code by remember { mutableStateOf("") }
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Retrouver un lot", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Retrouver un lot", style = MaterialTheme.typography.displaySmall)
         Text("Scannez le QR code ou saisissez le numéro.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
 
@@ -227,7 +227,7 @@ fun LotSearchResultScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Résultat de la recherche", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Résultat de la recherche", style = MaterialTheme.typography.displaySmall)
         Text("« $query »", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         when {

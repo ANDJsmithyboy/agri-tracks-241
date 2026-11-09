@@ -25,7 +25,7 @@ fun VaccinationTreatmentScreen(
 ) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Vaccins et traitements", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Vaccins et traitements", style = MaterialTheme.typography.displaySmall)
         Text(bandLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
 
@@ -95,7 +95,7 @@ fun RegisterTreatmentScreen(
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = PoufaPagePadding)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Enregistrer un traitement", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Enregistrer un traitement", style = MaterialTheme.typography.displaySmall)
             Text(bandLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
 

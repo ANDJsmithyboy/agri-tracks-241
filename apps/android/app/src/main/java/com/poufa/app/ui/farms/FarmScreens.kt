@@ -41,7 +41,7 @@ fun FarmSelectionScreen(
             Spacer(Modifier.height(24.dp))
             PoufaBrandHeader()
             Spacer(Modifier.height(28.dp))
-            Text("Vos fermes", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Vos fermes", style = MaterialTheme.typography.displaySmall)
             Text("Choisissez la ferme à suivre.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(24.dp))
 
@@ -122,7 +122,7 @@ fun CreateFarmScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-            Text("Nouvelle ferme", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text("Nouvelle ferme", style = MaterialTheme.typography.displaySmall)
             Text("Ces informations servent à identifier vos lots.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(24.dp))
 

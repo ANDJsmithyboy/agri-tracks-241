@@ -33,7 +33,7 @@ data class ContactRow(val name: String, val detail: String?, val phone: String?,
 fun UsefulContactsScreen(farmLabel: String, contacts: List<ContactRow>, onBack: () -> Unit, onCall: (String) -> Unit = {}) {
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Contacts utiles", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Contacts utiles", style = MaterialTheme.typography.displaySmall)
         Text(farmLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
         PoufaInfoBanner("Numéros à compléter par la ferme ou son organisme d'encadrement.")
@@ -76,7 +76,7 @@ fun LotsScreen(
     val filtered = lots.filter { query.isBlank() || it.code.contains(query, true) || it.subtitle.contains(query, true) }
     Column(Modifier.fillMaxSize().padding(horizontal = PoufaPagePadding)) {
         if (onBack != null) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour") }
-        Text("Lots et traçabilité", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Lots et traçabilité", style = MaterialTheme.typography.displaySmall)
         Text(farmLabel, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(16.dp))
 
@@ -223,7 +223,7 @@ fun MyProfileScreen(
                 Text(displayName?.firstOrNull()?.uppercase() ?: "?", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = PoufaPrimary)
             }
             Spacer(Modifier.height(12.dp))
-            Text(displayName ?: "Utilisateur", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Text(displayName ?: "Utilisateur", style = MaterialTheme.typography.headlineLarge)
             Text(role ?: "Membre", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.height(24.dp))
