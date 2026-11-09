@@ -233,7 +233,7 @@ fun QrScannerScreen(
                             containerColor = Color.Black.copy(alpha = 0.5f),
                             contentColor = Color.White,
                         ),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                        border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
                             brush = androidx.compose.ui.graphics.SolidColor(Color.White.copy(alpha = 0.6f)),
                         ),
                         shape = RoundedCornerShape(14.dp),

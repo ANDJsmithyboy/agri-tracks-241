@@ -147,13 +147,50 @@ fun PoufaAiScreen(
     val configuration = LocalConfiguration.current
     val isTablet = configuration.screenWidthDp >= 840
 
+    val aiConvDao = ServiceLocator.database.aiConversationDao()
+    val aiMsgDao = ServiceLocator.database.aiMessageDao()
+    val userId = com.poufa.app.ui.Session.userId ?: ""
+
     fun refreshConversations() {
         scope.launch {
             isLoadingHistory = true
             runCatching { ServiceLocator.api.listAiConversations() }
-                .onSuccess { conversations = it.conversations }
+                .onSuccess { resp ->
+                    conversations = resp.conversations
+                    // Cache offline dans Room
+                    val now = System.currentTimeMillis()
+                    val entities = resp.conversations.map { c ->
+                        com.poufa.app.data.local.AiConversationEntity(
+                            id = c.id, userId = userId, farmId = c.farmId,
+                            title = c.title,
+                            createdAt = runCatching {
+                                java.time.OffsetDateTime.parse(c.createdAt ?: "").toInstant().toEpochMilli()
+                            }.getOrDefault(now),
+                            updatedAt = runCatching {
+                                java.time.OffsetDateTime.parse(c.updatedAt ?: "").toInstant().toEpochMilli()
+                            }.getOrDefault(now),
+                        )
+                    }
+                    aiConvDao.upsertAll(entities)
+                }
                 .onFailure {
-                    // Conserve les conversations actuelles en cache si hors ligne
+                    // Offline — charge depuis Room
+                    val cached = aiConvDao.observeForUser(userId)
+                    scope.launch {
+                        cached.collect { list ->
+                            if (conversations.isEmpty()) {
+                                conversations = list.map { e ->
+                                    AiConversationDto(
+                                        id = e.id, title = e.title, farmId = e.farmId,
+                                        createdAt = java.time.Instant.ofEpochMilli(e.createdAt)
+                                            .atOffset(java.time.ZoneOffset.UTC).toString(),
+                                        updatedAt = java.time.Instant.ofEpochMilli(e.updatedAt)
+                                            .atOffset(java.time.ZoneOffset.UTC).toString(),
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             isLoadingHistory = false
         }
@@ -180,14 +217,37 @@ fun PoufaAiScreen(
         activeConversationId = convId
         errorMessage = null
         scope.launch {
+            // D'abord charger le cache Room pour affichage instantané
+            val cachedMsgs = aiMsgDao.getForConversation(convId)
+            if (cachedMsgs.isNotEmpty()) {
+                messages = cachedMsgs.map {
+                    NativeChatMessage(it.id, it.role, it.content, it.status)
+                }
+            }
+            // Puis synchroniser avec le serveur
             runCatching { ServiceLocator.api.getAiConversation(convId) }
                 .onSuccess { detail ->
                     messages = detail.messages.map {
                         NativeChatMessage(it.id, it.role, it.content, it.status)
                     }
+                    // Mettre en cache Room
+                    val now = System.currentTimeMillis()
+                    val entities = detail.messages.map { m ->
+                        com.poufa.app.data.local.AiMessageEntity(
+                            id = m.id, conversationId = convId,
+                            role = m.role, content = m.content, status = m.status,
+                            createdAt = runCatching {
+                                java.time.OffsetDateTime.parse(m.createdAt ?: "").toInstant().toEpochMilli()
+                            }.getOrDefault(now),
+                        )
+                    }
+                    aiMsgDao.upsertAll(entities)
                 }
                 .onFailure { exc ->
-                    errorMessage = "Impossible de charger la conversation : ${exc.message}"
+                    if (cachedMsgs.isEmpty()) {
+                        errorMessage = "Impossible de charger la conversation : ${exc.message}"
+                    }
+                    // sinon on garde le cache Room déjà affiché
                 }
         }
     }
@@ -237,6 +297,20 @@ fun PoufaAiScreen(
                 )
                 messages = messages.map { m ->
                     if (m.id == assistantMsgId) m.copy(status = "complete") else m
+                }
+                // Cache messages en Room pour le mode hors ligne
+                val now = System.currentTimeMillis()
+                aiMsgDao.insert(com.poufa.app.data.local.AiMessageEntity(
+                    id = userMsgId, conversationId = convId,
+                    role = "user", content = text, status = "complete", createdAt = now,
+                ))
+                val finalAssistant = messages.firstOrNull { it.id == assistantMsgId }
+                if (finalAssistant != null) {
+                    aiMsgDao.insert(com.poufa.app.data.local.AiMessageEntity(
+                        id = assistantMsgId, conversationId = convId,
+                        role = "assistant", content = finalAssistant.content,
+                        status = "complete", createdAt = now + 1,
+                    ))
                 }
                 refreshConversations()
             } catch (e: kotlinx.coroutines.CancellationException) {
@@ -887,15 +961,21 @@ fun PoufaAiScreen(
                                             modifier = Modifier.fillMaxWidth(),
                                         ) {
                                             Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
-                                                Text(
-                                                    text = msg.content.ifBlank {
-                                                        if (msg.status == "streaming") "POUFA AI formule sa réponse…"
-                                                        else ""
-                                                    },
-                                                    color = MaterialTheme.colorScheme.onSurface,
-                                                    fontSize = 14.sp,
-                                                    lineHeight = 22.sp,
-                                                )
+                                                val displayContent = msg.content.ifBlank {
+                                                    if (msg.status == "streaming") "POUFA AI formule sa réponse…"
+                                                    else ""
+                                                }
+                                                if (msg.status == "streaming" && msg.content.isBlank()) {
+                                                    Text(
+                                                        text = displayContent,
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                    )
+                                                } else {
+                                                    MarkdownText(
+                                                        markdown = displayContent,
+                                                    )
+                                                }
 
                                                 if (msg.status == "complete" && msg.content.isNotBlank()) {
                                                     Spacer(Modifier.height(8.dp))

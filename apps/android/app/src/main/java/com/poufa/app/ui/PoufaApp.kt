@@ -154,7 +154,7 @@ fun PoufaApp() {
 private fun PoufaBottomNav(currentRoute: String, onNav: (String) -> Unit) {
     Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest) {
         Column {
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
             Row(Modifier.fillMaxWidth().navigationBarsPadding().height(64.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
                 topDests.forEach { dest ->
                     val selected = currentRoute == dest.route || (dest.route == "bandes" && currentRoute.startsWith("band/"))
@@ -168,8 +168,13 @@ private fun PoufaBottomNav(currentRoute: String, onNav: (String) -> Unit) {
                             contentAlignment = Alignment.Center) {
                             Icon(dest.icon, dest.label, tint = if (selected) PoufaPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Text(dest.label, fontSize = 12.sp, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                            color = if (selected) PoufaPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            dest.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (selected) PoufaPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
@@ -250,8 +255,8 @@ private fun HomeRoute(nav: NavHostController) {
             }
         }
         item {
-            Text("Bonjour", fontSize = 26.sp, fontWeight = FontWeight.Bold)
-            Text("Voici votre bande en cours.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Bonjour", style = MaterialTheme.typography.displaySmall)
+            Text("Voici votre bande en cours.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         val band = s.band
         if (band == null) {
@@ -304,7 +309,7 @@ private fun BandsRoute(nav: NavHostController) {
         Spacer(Modifier.height(24.dp))
         PoufaBrandHeader()
         Spacer(Modifier.height(24.dp))
-        Text("Mes bandes", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Mes bandes", style = MaterialTheme.typography.displaySmall)
         Spacer(Modifier.height(16.dp))
         if (bands.isEmpty()) PoufaEmptyState("Aucune bande", "Les bandes de la ferme apparaîtront ici.")
         bands.forEach { b ->
@@ -332,7 +337,7 @@ private fun InputsRoute(nav: NavHostController) {
         Spacer(Modifier.height(24.dp))
         PoufaBrandHeader()
         Spacer(Modifier.height(24.dp))
-        Text("Mes intrants", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text("Mes intrants", style = MaterialTheme.typography.displaySmall)
         Spacer(Modifier.height(20.dp))
         var invTab by remember { mutableIntStateOf(0) }
         PoufaSegmentedTabs(listOf("Stock", "Réceptions"), invTab, { invTab = it })

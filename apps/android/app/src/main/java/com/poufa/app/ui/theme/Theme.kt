@@ -70,6 +70,7 @@ fun PoufaTheme(
 ) {
     MaterialTheme(
         colorScheme = if (darkTheme) ObsidianNeonColors else RoyalCreamColors,
+        typography = PoufaTypography,
         content = content,
     )
 }

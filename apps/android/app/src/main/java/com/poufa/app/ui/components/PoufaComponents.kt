@@ -114,29 +114,53 @@ fun PoufaBrandHeader(subtitle: String? = null) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             PoufaEmblem(size = 28.dp)
             Spacer(Modifier.width(8.dp))
-            Text("POUFA", fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+            Text(
+                "POUFA",
+                style = MaterialTheme.typography.titleMedium,
+                letterSpacing = 1.5.sp,
+                fontWeight = FontWeight.Bold,
+            )
             Spacer(Modifier.width(6.dp))
-            Box(Modifier.size(8.dp).background(PoufaBrandGold, RoundedCornerShape(2.dp)))
+            Box(Modifier.size(6.dp).background(PoufaBrandGold, RoundedCornerShape(1.5.dp)))
         }
         if (subtitle != null) {
-            Text(subtitle, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp),
+            )
         }
     }
 }
 
 @Composable
 fun PoufaTopBar(title: String, onBack: (() -> Unit)? = null, trailing: (@Composable () -> Unit)? = null) {
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = PoufaPagePadding, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp,
     ) {
-        if (onBack != null) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour")
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 4.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour")
+                }
+            } else {
+                Spacer(Modifier.width(16.dp))
             }
+            Text(
+                title,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
+            )
+            trailing?.invoke()
         }
-        Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-        trailing?.invoke()
     }
 }
 

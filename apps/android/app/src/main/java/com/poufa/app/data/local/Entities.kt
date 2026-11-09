@@ -335,3 +335,29 @@ data class SyncConflictEntity(
     val resolvedAt: Long? = null,
     val resolution: String?,
 )
+
+
+// ── Cache offline pour conversations POUFA AI ──────────────────────────
+
+@Entity(tableName = "ai_conversation", indices = [Index("userId")])
+data class AiConversationEntity(
+    @PrimaryKey val id: String,
+    val userId: String,
+    val farmId: String?,
+    val title: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+@Entity(
+    tableName = "ai_message",
+    indices = [Index("conversationId")],
+)
+data class AiMessageEntity(
+    @PrimaryKey val id: String,
+    val conversationId: String,
+    val role: String,         // user | assistant
+    val content: String,
+    val status: String = "complete",
+    val createdAt: Long,
+)

@@ -274,6 +274,48 @@ interface AppNotificationDao {
     suspend fun markRead(id: String)
 }
 
+@Dao
+interface AiConversationDao {
+    @Query("SELECT * FROM ai_conversation WHERE userId = :userId ORDER BY updatedAt DESC")
+    fun observeForUser(userId: String): Flow<List<AiConversationEntity>>
+
+    @Query("SELECT * FROM ai_conversation WHERE id = :id")
+    suspend fun getById(id: String): AiConversationEntity?
+
+    @Upsert
+    suspend fun upsert(conv: AiConversationEntity)
+
+    @Upsert
+    suspend fun upsertAll(convs: List<AiConversationEntity>)
+
+    @Query("UPDATE ai_conversation SET title = :title, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun updateTitle(id: String, title: String, updatedAt: Long)
+
+    @Query("DELETE FROM ai_conversation WHERE id = :id")
+    suspend fun delete(id: String)
+}
+
+@Dao
+interface AiMessageDao {
+    @Query("SELECT * FROM ai_message WHERE conversationId = :conversationId ORDER BY createdAt ASC")
+    fun observeForConversation(conversationId: String): Flow<List<AiMessageEntity>>
+
+    @Query("SELECT * FROM ai_message WHERE conversationId = :conversationId ORDER BY createdAt ASC")
+    suspend fun getForConversation(conversationId: String): List<AiMessageEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(msg: AiMessageEntity)
+
+    @Upsert
+    suspend fun upsertAll(msgs: List<AiMessageEntity>)
+
+    @Query("UPDATE ai_message SET content = :content, status = :status WHERE id = :id")
+    suspend fun updateContent(id: String, content: String, status: String)
+
+    @Query("DELETE FROM ai_message WHERE conversationId = :conversationId")
+    suspend fun deleteForConversation(conversationId: String)
+}
+
 // ── Database ────────────────────────────────────────────────────────────
 
 @Database(
@@ -300,8 +342,10 @@ interface AppNotificationDao {
         PendingOperationEntity::class,
         SyncCursorEntity::class,
         SyncConflictEntity::class,
+        AiConversationEntity::class,
+        AiMessageEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class PoufaDatabase : RoomDatabase() {
@@ -324,4 +368,6 @@ abstract class PoufaDatabase : RoomDatabase() {
     abstract fun appNotificationDao(): AppNotificationDao
     abstract fun pendingOperationDao(): PendingOperationDao
     abstract fun syncCursorDao(): SyncCursorDao
+    abstract fun aiConversationDao(): AiConversationDao
+    abstract fun aiMessageDao(): AiMessageDao
 }
