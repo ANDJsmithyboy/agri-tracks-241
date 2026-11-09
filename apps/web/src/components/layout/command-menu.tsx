@@ -149,6 +149,16 @@ export function CommandMenu({
           <CommandItem
             onSelect={() =>
               runCommand(() =>
+                window.dispatchEvent(new Event("open-poufa-android-install"))
+              )
+            }
+          >
+            <Smartphone className="size-4 mr-2 text-[var(--brand-green)] dark:text-[var(--brand-neon)]" />
+            <span>Ouvrir la fenêtre d&apos;installation POUFA Android</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() =>
+              runCommand(() =>
                 window.dispatchEvent(new Event("open-poufa-welcome"))
               )
             }

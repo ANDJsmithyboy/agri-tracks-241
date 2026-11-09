@@ -32,13 +32,23 @@ export function FirstLoginAndroidDialog() {
   const [showGuide, setShowGuide] = useState(false);
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || !user) return;
+    // Permet la réouverture manuelle depuis la barre supérieure, profil ou command menu
+    const handleManualOpen = () => setOpen(true);
+    window.addEventListener("open-poufa-android-install", handleManualOpen);
+
+    if (!isLoaded || !isSignedIn || !user) {
+      return () => {
+        window.removeEventListener("open-poufa-android-install", handleManualOpen);
+      };
+    }
 
     try {
       // Éviter l'affichage en mode aperçu/test
       const params = new URLSearchParams(window.location.search);
       if (params.get("noandroid") === "1" || params.get("nowelcome") === "1") {
-        return;
+        return () => {
+          window.removeEventListener("open-poufa-android-install", handleManualOpen);
+        };
       }
 
       const storageKey = `poufa:android-install:${POUFA_ANDROID_RELEASE.version}:${user.id}`;
@@ -49,11 +59,18 @@ export function FirstLoginAndroidDialog() {
         const timer = setTimeout(() => {
           setOpen(true);
         }, 800);
-        return () => clearTimeout(timer);
+        return () => {
+          clearTimeout(timer);
+          window.removeEventListener("open-poufa-android-install", handleManualOpen);
+        };
       }
     } catch {
       // Ignorer si localStorage indisponible
     }
+
+    return () => {
+      window.removeEventListener("open-poufa-android-install", handleManualOpen);
+    };
   }, [isLoaded, isSignedIn, user]);
 
   const handleDismiss = () => {
