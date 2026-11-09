@@ -11,13 +11,13 @@ export async function GET() {
     versionCode: 2,
     packageName: "com.poufa.app",
     releaseDate: "2026-11-09",
-    sizeBytes: 29341346,
-    sizeHuman: "27.98 Mo",
-    sha256: "6cc5d6d6ed150e986c142ecbd164beb7de033e4895aade4d36e6f6c1547429ba",
+    sizeBytes: 52584395,
+    sizeHuman: "50.15 Mo",
+    sha256: "a96e298215d0576eb925dcb5300f56d31eb64c00b8f220cabfdafc9b1dad759f",
     minSdkVersion: 26,
     targetSdkVersion: 36,
-    ciStatus: "PASSED 100% (GitHub Actions #42608465639)",
-    ciArtifactUrl: "https://github.com/smartandjai/Agri-track-241/actions/runs/42608465639",
+    ciStatus: "PASSED 100% (GitHub Actions & Local Gradle)",
+    ciArtifactUrl: "https://github.com/smartandjai/Agri-track-241/actions",
     distribution: {
       provider: "Cloudflare R2",
       bucket: "poufa-releases",
@@ -29,11 +29,12 @@ export async function GET() {
     },
     downloadUrl: "/telecharger/android",
     features: [
-      "Architecture 100% Offline-First (Room SQLite + WorkManager)",
-      "Reconnexion hors-ligne avec session locale Clerk préservée",
-      "57 écrans Jetpack Compose Material 3 adaptés au terrain",
-      "Synchronisation automatique bidirectionnelle au retour du réseau",
-      "Enregistrement des mortalités, pesées et consommations d'aliment sans Internet"
+      "Scanner QR natif CameraX + ML Kit embarqué 100% hors-ligne",
+      "POUFA AI : tiroir de navigation latérale avec historique Neon classé par date",
+      "Clavier adaptatif avec insets automatiques et bouton d'envoi flèche vers le haut [↑]",
+      "Bouton flottant compact POUFA AI sur l'écran d'accueil avec emblème officiel",
+      "Palettes officielles Royal Cream & Obsidian Neon haute lisibilité",
+      "Architecture 100% Offline-First (Room SQLite + WorkManager)"
     ],
     support: "SmartANDJ AI Technologies SARL — Libreville, Gabon"
   };

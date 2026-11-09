@@ -26,6 +26,10 @@ class SendMessageRequest(BaseModel):
     farm_id: UUID | None = None
 
 
+class RenameConversationRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=160)
+
+
 def _build_farm_context(user_id: str, requested_farm_id: UUID | None = None) -> str:
     """
     Récupère uniquement le contexte minimal autorisé depuis Neon PostgreSQL
@@ -372,6 +376,34 @@ def delete_conversation(
             if not deleted:
                 raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation introuvable")
     return {"deleted": True, "id": str(conversation_id)}
+
+
+@router.patch("/conversations/{conversation_id}")
+def rename_conversation(
+    conversation_id: UUID,
+    body: RenameConversationRequest,
+    claims: dict = Depends(get_claims),
+) -> dict:
+    user_id = claims.get("sub") or "anonymous"
+    now = datetime.now(timezone.utc)
+    new_title = body.title.strip()
+    if not new_title:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Le titre ne peut pas être vide")
+    with get_pool().connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE ai_conversations
+                SET title = %s, updated_at = %s
+                WHERE id = %s AND user_id = %s
+                RETURNING id, title
+                """,
+                (new_title, now, conversation_id, user_id),
+            )
+            updated = cur.fetchone()
+            if not updated:
+                raise HTTPException(status.HTTP_404_NOT_FOUND, "Conversation introuvable")
+    return {"id": str(updated[0]), "title": updated[1], "updatedAt": now.isoformat()}
 
 
 def _prepare_conversation_and_history(

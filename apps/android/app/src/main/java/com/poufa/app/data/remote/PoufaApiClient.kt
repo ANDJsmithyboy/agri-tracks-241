@@ -157,6 +157,13 @@ class PoufaApiClient(
     suspend fun deleteAiConversation(conversationId: String): String =
         request("/api/v1/ai/conversations/$conversationId", "DELETE")
 
+    suspend fun renameAiConversation(conversationId: String, newTitle: String): String =
+        request(
+            "/api/v1/ai/conversations/$conversationId",
+            "PATCH",
+            JSONObject().put("title", newTitle).toString(),
+        )
+
     /**
      * Streaming SSE incrémental depuis FastAPI (/api/v1/ai/conversations/{id}/stream).
      * Aucune clé fournisseur n'est exposée au client Android.
