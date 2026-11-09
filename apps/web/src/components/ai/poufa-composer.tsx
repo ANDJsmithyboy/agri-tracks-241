@@ -152,3 +152,4 @@ export function PoufaComposer({
     </div>
   );
 }
+
