@@ -3,25 +3,25 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const r2Url =
     process.env.POUFA_ANDROID_APK_URL ||
-    "https://downloads.smartandjai.com/android/poufa-kimba-demo-v0.1.apk";
+    "https://downloads.smartandjai.com/android/poufa-kimba-demo-v0.2.apk";
 
   const releaseInfo = {
     appName: "POUFA Android",
-    version: "0.1.0-kimba-demo",
-    versionCode: 1,
+    version: "0.2.0-kimba-demo",
+    versionCode: 2,
     packageName: "com.poufa.app",
-    releaseDate: "2026-11-08",
+    releaseDate: "2026-11-09",
     sizeBytes: 27836513,
     sizeHuman: "26.55 Mo",
     sha256: "4b68e8e7a685121b6d92a95c52c6e64c39de558a7b973c75ecf23bc2e48e02d0",
     minSdkVersion: 26,
-    targetSdkVersion: 34,
-    ciStatus: "PASSED 100% (GitHub Actions #42518891662)",
-    ciArtifactUrl: "https://github.com/smartandjai/Agri-track-241/actions/runs/42518891662",
+    targetSdkVersion: 36,
+    ciStatus: "Building via GitHub Actions (Android CI)",
+    ciArtifactUrl: "https://github.com/ANDJsmithyboy/agri-tracks-241/actions",
     distribution: {
       provider: "Cloudflare R2",
       bucket: "poufa-releases",
-      objectKey: "android/poufa-kimba-demo-v0.1.apk",
+      objectKey: "android/poufa-kimba-demo-v0.2.apk",
       r2PublicUrl: r2Url,
       downloadRoute: "/telecharger/android",
       contentType: "application/vnd.android.package-archive",

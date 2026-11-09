@@ -23,21 +23,22 @@ android {
         applicationId = "com.poufa.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
 
         // Clé publishable Clerk = config publique client (JAMAIS la secret key).
-        // Renseigner dans local.properties : POUFA_CLERK_PUBLISHABLE_KEY=pk_test_...
         val clerkKey: String = (project.findProperty("POUFA_CLERK_PUBLISHABLE_KEY") as String?)
-            ?: localProperties.getProperty("POUFA_CLERK_PUBLISHABLE_KEY")
-            ?: System.getenv("POUFA_CLERK_PUBLISHABLE_KEY")
-            ?: ""
+            ?.takeIf { it.isNotBlank() }
+            ?: localProperties.getProperty("POUFA_CLERK_PUBLISHABLE_KEY")?.takeIf { it.isNotBlank() }
+            ?: System.getenv("POUFA_CLERK_PUBLISHABLE_KEY")?.takeIf { it.isNotBlank() }
+            ?: "pk_test_aW50ZXJuYWwtb3lzdGVyLTgzNjEuY2xlcmsuYWNjb3VudHMuZGV2JA"
         val apiBaseUrl: String = (project.findProperty("POUFA_API_BASE_URL") as String?)
-            ?: localProperties.getProperty("POUFA_API_BASE_URL")
-            ?: System.getenv("POUFA_API_BASE_URL")
-            ?: "http://10.0.2.2:8000"
+            ?.takeIf { it.isNotBlank() }
+            ?: localProperties.getProperty("POUFA_API_BASE_URL")?.takeIf { it.isNotBlank() }
+            ?: System.getenv("POUFA_API_BASE_URL")?.takeIf { it.isNotBlank() }
+            ?: "https://fastapi-poufa-production.up.railway.app/"
         buildConfigField("String", "CLERK_PUBLISHABLE_KEY", "\"$clerkKey\"")
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }

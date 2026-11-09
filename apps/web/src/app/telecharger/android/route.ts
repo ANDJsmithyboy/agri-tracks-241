@@ -33,7 +33,7 @@ function isTrustedUrl(rawUrl: string): boolean {
 export async function GET(request: Request) {
   const configuredUrl =
     process.env.POUFA_ANDROID_APK_URL ||
-    "https://downloads.smartandjai.com/android/poufa-kimba-demo-v0.1.apk";
+    "https://downloads.smartandjai.com/android/poufa-kimba-demo-v0.2.apk";
 
   if (!configuredUrl || !isTrustedUrl(configuredUrl)) {
     // Si l'URL n'est pas encore configurée ou pointe sur un hôte non fiable
