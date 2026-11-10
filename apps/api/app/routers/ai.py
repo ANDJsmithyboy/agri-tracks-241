@@ -215,15 +215,16 @@ def _open_deepseek_request(messages: list[dict], stream: bool):
 
     last_err: Exception | None = None
     for model_name in models_to_try:
-        payload = json.dumps(
-            {
-                "model": model_name,
-                "messages": messages,
-                "stream": stream,
-                "temperature": 0.3,
-                "max_tokens": 1200,
-            }
-        ).encode("utf-8")
+        req_body: dict = {
+            "model": model_name,
+            "messages": messages,
+            "stream": stream,
+            "temperature": 0.3,
+            "max_tokens": 1600,
+        }
+        if model_name in ("deepseek-flash", "deepseek-v4-flash", "deepseek-v4-pro"):
+            req_body["thinking"] = {"type": "disabled"}
+        payload = json.dumps(req_body).encode("utf-8")
         req = urllib.request.Request(
             url,
             data=payload,

@@ -6,9 +6,11 @@ import {
   type KeyboardEvent,
   type ChangeEvent,
 } from "react";
-import { ArrowUp, Sparkles, Square } from "lucide-react";
+import { ArrowUp, BrainCircuit, Sparkles, Square, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+export type PoufaModelTier = "flash" | "pro";
 
 export interface PoufaComposerProps {
   value: string;
@@ -21,6 +23,8 @@ export interface PoufaComposerProps {
   className?: string;
   badgeLabel?: string;
   autoFocus?: boolean;
+  modelTier?: PoufaModelTier;
+  onModelTierChange?: (tier: PoufaModelTier) => void;
 }
 
 /**
@@ -45,6 +49,8 @@ export function PoufaComposer({
   className,
   badgeLabel = "Bande B-2026-014 active",
   autoFocus = true,
+  modelTier,
+  onModelTierChange,
 }: PoufaComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -106,12 +112,50 @@ export function PoufaComposer({
 
       {/* ── Action Lockup (Context badge + Circular Send / Stop Control) ── */}
       <div className="flex items-center justify-between px-3.5 pb-3 pt-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           {badgeLabel && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary/60 border border-border/60 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">
               <span className="size-1.5 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)]" />
               <span>{badgeLabel}</span>
             </span>
+          )}
+          {modelTier && onModelTierChange && (
+            <div
+              className="inline-flex items-center rounded-full border border-border/60 bg-secondary/40 p-0.5 text-[11px]"
+              role="group"
+              aria-label="Mode de modèle POUFA AI"
+            >
+              <button
+                type="button"
+                onClick={() => onModelTierChange("flash")}
+                disabled={isStreaming}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium transition-colors",
+                  modelTier === "flash"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+                title="Réponse rapide en temps réel (V4.1 Flash)"
+              >
+                <Zap className="size-3 text-[var(--brand-green)] dark:text-[var(--brand-neon)]" />
+                <span>Flash</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onModelTierChange("pro")}
+                disabled={isStreaming}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium transition-colors",
+                  modelTier === "pro"
+                    ? "bg-card text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+                title="Analyse approfondie avec raisonnement visible (V4 Pro)"
+              >
+                <BrainCircuit className="size-3 text-[var(--brand-gold)]" />
+                <span>Pro</span>
+              </button>
+            </div>
           )}
         </div>
 

@@ -7,16 +7,21 @@ import {
   useRef,
   useState,
 } from "react";
+import Link from "next/link";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import {
   AlertCircle,
+  BrainCircuit,
   Check,
+  ChevronDown,
+  ChevronRight,
   Columns2,
   Copy,
   History,
   Maximize2,
   Minimize2,
   RotateCcw,
-  Sparkles,
 } from "lucide-react";
 import { PoufaEmblem } from "@/components/poufa-emblem";
 import {
@@ -26,7 +31,10 @@ import {
   PoufaWeighingIcon,
 } from "@/components/brand-icons";
 import { Button } from "@/components/ui/button";
-import { PoufaComposer } from "@/components/ai/poufa-composer";
+import {
+  PoufaComposer,
+  type PoufaModelTier,
+} from "@/components/ai/poufa-composer";
 import { AiSidebarNav } from "@/components/ai/ai-sidebar-nav";
 import {
   Sheet,
@@ -36,21 +44,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-
-interface ConversationSummary {
-  id: string;
-  title: string;
-  createdAt?: string | null;
-  updatedAt?: string | null;
-}
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  status?: "streaming" | "complete" | "error";
-  createdAt?: string;
-}
 
 const SUGGESTED_PROMPTS = [
   {
@@ -80,7 +73,25 @@ const SUGGESTED_PROMPTS = [
 ];
 
 function FormattedMessageContent({ content }: { content: string }) {
-  const blocks = useMemo(() => content.split(/\n\n+/), [content]);
+  const segments = useMemo(() => {
+    const out: Array<
+      { kind: "code"; lang: string; code: string } | { kind: "markdown"; text: string }
+    > = [];
+    const fenceRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = fenceRegex.exec(content)) !== null) {
+      if (match.index > lastIndex) {
+        out.push({ kind: "markdown", text: content.slice(lastIndex, match.index) });
+      }
+      out.push({ kind: "code", lang: match[1] || "text", code: match[2].trimEnd() });
+      lastIndex = fenceRegex.lastIndex;
+    }
+    if (lastIndex < content.length) {
+      out.push({ kind: "markdown", text: content.slice(lastIndex) });
+    }
+    return out;
+  }, [content]);
 
   const formatInline = (text: string) => {
     const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
@@ -108,110 +119,252 @@ function FormattedMessageContent({ content }: { content: string }) {
 
   return (
     <div className="space-y-3 text-sm leading-relaxed text-foreground">
-      {blocks.map((block, i) => {
-        const lines = block.split("\n");
-        const isBulletList = lines.every((l) =>
-          /^\s*([-*•]|\d+\.)\s+/.test(l.trim()),
-        );
-        if (isBulletList && lines.length > 0) {
+      {segments.map((seg, sIdx) => {
+        if (seg.kind === "code") {
           return (
-            <ul key={i} className="list-disc space-y-1 pl-5 text-foreground/90">
-              {lines.map((line, j) => (
-                <li key={j}>
-                  {formatInline(line.replace(/^\s*([-*•]|\d+\.)\s+/, ""))}
-                </li>
-              ))}
-            </ul>
-          );
-        }
-        if (block.trim().startsWith("### ")) {
-          return (
-            <h4
-              key={i}
-              className="pt-2 text-sm font-semibold tracking-tight text-foreground"
+            <pre
+              key={sIdx}
+              className="overflow-x-auto rounded-xl border border-border/70 bg-muted/60 p-3 font-mono text-xs leading-relaxed text-foreground"
             >
-              {formatInline(block.trim().replace(/^###\s+/, ""))}
-            </h4>
+              <code>{seg.code}</code>
+            </pre>
           );
         }
-        if (block.trim().startsWith("## ")) {
+
+        const blocks = seg.text.split(/\n\n+/);
+        return blocks.map((rawBlock, i) => {
+          const block = rawBlock.trim();
+          if (!block) return null;
+          if (/^---+$/.test(block)) {
+            return <hr key={`${sIdx}-${i}`} className="border-border/60 my-2" />;
+          }
+
+          const lines = block.split("\n");
+          const isBulletList = lines.every((l) =>
+            /^\s*([-*•]|\d+\.)\s+/.test(l.trim()),
+          );
+          if (isBulletList && lines.length > 0) {
+            return (
+              <ul
+                key={`${sIdx}-${i}`}
+                className="list-disc space-y-1 pl-5 text-foreground/90"
+              >
+                {lines.map((line, j) => (
+                  <li key={j}>
+                    {formatInline(line.replace(/^\s*([-*•]|\d+\.)\s+/, ""))}
+                  </li>
+                ))}
+              </ul>
+            );
+          }
+          if (block.startsWith("### ")) {
+            return (
+              <h4
+                key={`${sIdx}-${i}`}
+                className="pt-2 text-sm font-semibold tracking-tight text-foreground"
+              >
+                {formatInline(block.replace(/^###\s+/, ""))}
+              </h4>
+            );
+          }
+          if (block.startsWith("## ")) {
+            return (
+              <h3
+                key={`${sIdx}-${i}`}
+                className="pt-2 text-base font-semibold tracking-tight text-foreground"
+              >
+                {formatInline(block.replace(/^##\s+/, ""))}
+              </h3>
+            );
+          }
+          if (block.startsWith("# ")) {
+            return (
+              <h2
+                key={`${sIdx}-${i}`}
+                className="pt-2 text-lg font-semibold tracking-tight text-foreground"
+              >
+                {formatInline(block.replace(/^#\s+/, ""))}
+              </h2>
+            );
+          }
           return (
-            <h3
-              key={i}
-              className="pt-2 text-base font-semibold tracking-tight text-foreground"
+            <p
+              key={`${sIdx}-${i}`}
+              className="whitespace-pre-wrap text-foreground/90 leading-relaxed"
             >
-              {formatInline(block.trim().replace(/^##\s+/, ""))}
-            </h3>
+              {formatInline(block)}
+            </p>
           );
-        }
-        return (
-          <p key={i} className="whitespace-pre-wrap text-foreground/90 leading-relaxed">
-            {formatInline(block)}
-          </p>
-        );
+        });
       })}
     </div>
   );
 }
 
+function ReasoningAccordion({
+  text,
+  isStreaming,
+}: {
+  text: string;
+  isStreaming: boolean;
+}) {
+  const [expanded, setExpanded] = useState(isStreaming);
+
+  useEffect(() => {
+    if (isStreaming) setExpanded(true);
+  }, [isStreaming]);
+
+  if (!text.trim()) return null;
+
+  return (
+    <div className="mb-3 rounded-xl border border-border/70 bg-muted/30 px-3 py-2 text-xs">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 text-left text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <span className="flex items-center gap-1.5 font-medium">
+          <BrainCircuit
+            className={cn(
+              "size-3.5 text-[var(--brand-gold)]",
+              isStreaming && "animate-pulse",
+            )}
+          />
+          <span>
+            {isStreaming
+              ? "Analyse zootechnique en cours…"
+              : "Raisonnement POUFA AI Pro"}
+          </span>
+        </span>
+        {expanded ? (
+          <ChevronDown className="size-3.5 shrink-0" />
+        ) : (
+          <ChevronRight className="size-3.5 shrink-0" />
+        )}
+      </button>
+      {expanded && (
+        <p className="mt-2 whitespace-pre-wrap border-t border-border/50 pt-2 font-mono text-[11px] leading-relaxed text-muted-foreground">
+          {text}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function extractMessageText(message: UIMessage): string {
+  return message.parts
+    .filter((p): p is { type: "text"; text: string } => p.type === "text")
+    .map((p) => p.text)
+    .join("");
+}
+
+function extractMessageReasoning(message: UIMessage): {
+  text: string;
+  isStreaming: boolean;
+} {
+  const parts = message.parts.filter(
+    (p): p is { type: "reasoning"; text: string; state?: "streaming" | "done" } =>
+      p.type === "reasoning",
+  );
+  return {
+    text: parts.map((p) => p.text).join(""),
+    isStreaming: parts.some((p) => p.state === "streaming"),
+  };
+}
+
 export default function PoufaAiPage() {
-  const [activeConvId, setActiveConvId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [chatSession, setChatSession] = useState<{
+    id: string;
+    initialMessages: UIMessage[];
+  }>(() => ({
+    id: crypto.randomUUID(),
+    initialMessages: [],
+  }));
   const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const [modelTier, setModelTier] = useState<PoufaModelTier>("flash");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [lastPrompt, setLastPrompt] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<"focus" | "wide">("focus");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const abortRef = useRef<AbortController | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const nearBottomRef = useRef(true);
 
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/ai/chat",
+        body: {
+          modelTier,
+          enableThinking: modelTier === "pro",
+        },
+      }),
+    [modelTier],
+  );
+
+  const {
+    messages,
+    sendMessage,
+    regenerate,
+    stop,
+    status,
+    error,
+    clearError,
+  } = useChat({
+    id: chatSession.id,
+    messages: chatSession.initialMessages,
+    transport,
+    onFinish: () => {
+      window.dispatchEvent(new CustomEvent("poufa:ai-conversations-updated"));
+    },
+  });
+
+  const isStreaming = status === "submitted" || status === "streaming";
+
   const selectConversation = useCallback(async (convId: string) => {
-    setActiveConvId(convId);
-    setErrorBanner(null);
+    setLoadError(null);
     setDrawerOpen(false);
     try {
       const res = await fetch(`/api/ai/conversations/${convId}`);
-      if (!res.ok) return;
-      const data = await res.json();
-      if (Array.isArray(data.messages)) {
-        setMessages(
-          data.messages.map(
-            (m: {
-              id: string;
-              role: "user" | "assistant";
-              content: string;
-              status?: "complete" | "error";
-              createdAt?: string;
-            }) => ({
+      if (!res.ok) {
+        if (res.status === 401) {
+          setLoadError(
+            "Session non authentifiée : connectez-vous pour consulter l'historique.",
+          );
+        }
+        return;
+      }
+      const data = (await res.json()) as {
+        messages?: Array<{
+          id: string;
+          role: "user" | "assistant" | "system";
+          content: string;
+        }>;
+      };
+      const uiMsgs: UIMessage[] = Array.isArray(data.messages)
+        ? data.messages
+            .filter((m) => m.role === "user" || m.role === "assistant")
+            .map((m) => ({
               id: m.id,
               role: m.role,
-              content: m.content,
-              status: m.status || "complete",
-              createdAt: m.createdAt,
-            }),
-          ),
-        );
-      }
+              parts: [{ type: "text", text: m.content }],
+            }))
+        : [];
+      setChatSession({ id: convId, initialMessages: uiMsgs });
     } catch (err) {
-      setErrorBanner(`Impossible de charger la conversation (${String(err)})`);
+      setLoadError(`Impossible de charger la conversation (${String(err)})`);
     }
   }, []);
 
   const handleNewConversation = useCallback(() => {
-    abortRef.current?.abort();
-    setIsStreaming(false);
-    setActiveConvId(null);
-    setMessages([]);
-    setErrorBanner(null);
+    void stop();
+    clearError();
+    setLoadError(null);
     setDrawerOpen(false);
-  }, []);
+    setChatSession({ id: crypto.randomUUID(), initialMessages: [] });
+  }, [stop, clearError]);
 
-  // Sync with adaptive sidebar custom events
   useEffect(() => {
     const handleSelectEvent = (e: Event) => {
       const customEvent = e as CustomEvent<{ id: string }>;
@@ -227,7 +380,10 @@ export default function PoufaAiPage() {
     window.addEventListener("poufa:new-ai-conversation", handleNewEvent);
 
     return () => {
-      window.removeEventListener("poufa:select-ai-conversation", handleSelectEvent);
+      window.removeEventListener(
+        "poufa:select-ai-conversation",
+        handleSelectEvent,
+      );
       window.removeEventListener("poufa:new-ai-conversation", handleNewEvent);
     };
   }, [selectConversation, handleNewConversation]);
@@ -242,164 +398,27 @@ export default function PoufaAiPage() {
     scrollToBottomIfNear();
   }, [messages, scrollToBottomIfNear]);
 
-  const sendMessage = useCallback(
+  const handleSendText = useCallback(
     async (rawText: string) => {
       const text = rawText.trim();
       if (!text || isStreaming) return;
-
+      clearError();
+      setLoadError(null);
       setInput("");
-      setLastPrompt(text);
-      setErrorBanner(null);
       nearBottomRef.current = true;
-
-      let convId = activeConvId;
-      if (!convId) {
-        convId = crypto.randomUUID();
-        setActiveConvId(convId);
-      }
-
-      const userMsgId = crypto.randomUUID();
-      const assistantPlaceholderId = crypto.randomUUID();
-      const nowIso = new Date().toISOString();
-
-      setMessages((prev) => [
-        ...prev,
+      await sendMessage(
+        { text },
         {
-          id: userMsgId,
-          role: "user",
-          content: text,
-          status: "complete",
-          createdAt: nowIso,
+          body: {
+            id: chatSession.id,
+            modelTier,
+            enableThinking: modelTier === "pro",
+          },
         },
-        {
-          id: assistantPlaceholderId,
-          role: "assistant",
-          content: "",
-          status: "streaming",
-          createdAt: nowIso,
-        },
-      ]);
-
-      const controller = new AbortController();
-      abortRef.current = controller;
-      setIsStreaming(true);
-
-      try {
-        const res = await fetch(`/api/ai/conversations/${convId}/stream`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: text }),
-          signal: controller.signal,
-        });
-
-        if (!res.ok || !res.body) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(
-            errData.error || `Erreur de communication (HTTP ${res.status})`,
-          );
-        }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-
-          const events = buffer.split("\n\n");
-          buffer = events.pop() || "";
-
-          for (const evtBlock of events) {
-            const lines = evtBlock.split("\n");
-            let eventType = "message";
-            let dataStr = "";
-            for (const line of lines) {
-              if (line.startsWith("event:")) {
-                eventType = line.slice(6).trim();
-              } else if (line.startsWith("data:")) {
-                dataStr += line.slice(5).trim();
-              }
-            }
-            if (!dataStr) continue;
-            try {
-              const parsed = JSON.parse(dataStr);
-              if (eventType === "message.delta" && parsed.text) {
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantPlaceholderId
-                      ? { ...m, content: m.content + parsed.text }
-                      : m,
-                  ),
-                );
-              } else if (eventType === "message.complete") {
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantPlaceholderId
-                      ? { ...m, status: "complete" }
-                      : m,
-                  ),
-                );
-              } else if (eventType === "message.error") {
-                throw new Error(parsed.error || "Erreur lors de la réponse");
-              }
-            } catch (innerErr) {
-              if (eventType === "message.error") {
-                throw innerErr;
-              }
-            }
-          }
-        }
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantPlaceholderId ? { ...m, status: "complete" } : m,
-          ),
-        );
-        window.dispatchEvent(new CustomEvent("poufa:ai-conversations-updated"));
-      } catch (err) {
-        if ((err as Error).name === "AbortError") {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantPlaceholderId
-                ? {
-                    ...m,
-                    content: m.content || "Génération interrompue.",
-                    status: "complete",
-                  }
-                : m,
-            ),
-          );
-        } else {
-          const msg =
-            err instanceof Error ? err.message : "Erreur réseau inattendue";
-          setErrorBanner(msg);
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantPlaceholderId
-                ? {
-                    ...m,
-                    content:
-                      m.content ||
-                      "La réponse n'a pas pu être générée. Vous pouvez réessayer.",
-                    status: "error",
-                  }
-                : m,
-            ),
-          );
-        }
-      } finally {
-        setIsStreaming(false);
-        abortRef.current = null;
-      }
+      );
     },
-    [activeConvId, isStreaming],
+    [isStreaming, clearError, sendMessage, chatSession.id, modelTier],
   );
-
-  const handleStop = useCallback(() => {
-    abortRef.current?.abort();
-  }, []);
 
   const handleCopy = async (id: string, text: string) => {
     try {
@@ -411,6 +430,11 @@ export default function PoufaAiPage() {
     }
   };
 
+  const displayError = loadError || error?.message || null;
+  const needsAuth =
+    displayError !== null &&
+    (displayError.includes("401") ||
+      displayError.toLowerCase().includes("authentifi"));
   const isThreadActive = messages.length > 0;
   const contentWidthClass =
     layoutMode === "focus" ? "max-w-[760px]" : "max-w-[1040px]";
@@ -430,14 +454,15 @@ export default function PoufaAiPage() {
           <span className="text-xs font-semibold tracking-tight text-foreground">
             POUFA AI
           </span>
-          <span className="text-muted-foreground/40" aria-hidden>·</span>
+          <span className="text-muted-foreground/40" aria-hidden>
+            ·
+          </span>
           <span className="text-xs text-muted-foreground">
-            Assistant zootéchnique
+            Assistant zootechnique SSE ({modelTier === "pro" ? "Pro" : "Flash"})
           </span>
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Toggle Mode Focus (760px) / Large (1040px) */}
           <Button
             variant="ghost"
             size="sm"
@@ -455,12 +480,15 @@ export default function PoufaAiPage() {
             <span>{layoutMode === "focus" ? "Focus" : "Large"}</span>
           </Button>
 
-          {/* Plein écran immersif */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            title={isFullscreen ? "Quitter le plein écran" : "Plein écran immersif"}
+            title={
+              isFullscreen
+                ? "Quitter le plein écran"
+                : "Plein écran immersif"
+            }
             className="size-7 text-muted-foreground hover:text-foreground"
             aria-label="Basculer le plein écran"
           >
@@ -502,7 +530,7 @@ export default function PoufaAiPage() {
                 </SheetTitle>
               </SheetHeader>
               <AiSidebarNav
-                activeId={activeConvId}
+                activeId={chatSession.id}
                 onSelectConversation={(id) => void selectConversation(id)}
                 onNewConversation={handleNewConversation}
               />
@@ -540,11 +568,13 @@ export default function PoufaAiPage() {
                 <PoufaComposer
                   value={input}
                   onChange={setInput}
-                  onSubmit={() => void sendMessage(input)}
-                  onStop={handleStop}
+                  onSubmit={() => void handleSendText(input)}
+                  onStop={() => void stop()}
                   isStreaming={isStreaming}
                   placeholder="Posez une question sur votre exploitation ou vos bandes…"
                   badgeLabel="Bande active B-2026-014"
+                  modelTier={modelTier}
+                  onModelTierChange={setModelTier}
                 />
               </div>
 
@@ -556,7 +586,7 @@ export default function PoufaAiPage() {
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => void sendMessage(item.prompt)}
+                      onClick={() => void handleSendText(item.prompt)}
                       className="group flex items-start gap-2.5 rounded-xl border border-border/70 bg-card/60 p-3 text-left transition-all hover:bg-card hover:border-border hover:shadow-xs"
                     >
                       <Icon className="size-4 shrink-0 mt-0.5 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -577,15 +607,40 @@ export default function PoufaAiPage() {
         ) : (
           /* ── Active Conversation Stream (Reading Column) ── */
           <div className={cn("mx-auto space-y-6 pb-28 pt-2", contentWidthClass)}>
-            {errorBanner && (
-              <div className="flex items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
+            {displayError && (
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-xs text-destructive">
                 <AlertCircle className="size-4 shrink-0" />
-                <span className="flex-1">{errorBanner}</span>
+                <span className="flex-1">{displayError}</span>
+                {needsAuth ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="h-7 text-xs"
+                  >
+                    <Link href="/connexion">Se connecter</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void regenerate()}
+                    className="h-7 text-xs"
+                  >
+                    Réessayer
+                  </Button>
+                )}
               </div>
             )}
 
-            {messages.map((m) => {
+            {messages.map((m, idx) => {
               const isUser = m.role === "user";
+              const textContent = extractMessageText(m);
+              const reasoning = extractMessageReasoning(m);
+              const isLastAssistant =
+                !isUser && idx === messages.length - 1;
+              const isMsgStreaming = isStreaming && isLastAssistant;
+
               return (
                 <article
                   key={m.id}
@@ -610,23 +665,35 @@ export default function PoufaAiPage() {
                   >
                     {isUser ? (
                       <p className="whitespace-pre-wrap leading-relaxed text-sm">
-                        {m.content}
+                        {textContent}
                       </p>
                     ) : (
                       <div className="space-y-2">
-                        {m.status === "streaming" && !m.content && (
-                          <div className="flex items-center gap-1.5 py-2 text-xs text-muted-foreground">
-                            <span className="inline-block size-1.5 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)] animate-pulse" />
-                            <span>Réflexion en cours…</span>
-                          </div>
+                        {reasoning.text && (
+                          <ReasoningAccordion
+                            text={reasoning.text}
+                            isStreaming={reasoning.isStreaming}
+                          />
                         )}
-                        <FormattedMessageContent content={m.content} />
 
-                        {m.status === "complete" && m.content && (
-                          <div className="flex items-center gap-2 pt-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                        {isMsgStreaming &&
+                          !textContent &&
+                          !reasoning.text && (
+                            <div className="flex items-center gap-1.5 py-2 text-xs text-muted-foreground">
+                              <span className="inline-block size-1.5 rounded-full bg-[var(--brand-green)] dark:bg-[var(--brand-neon)] animate-pulse" />
+                              <span>Réflexion en cours…</span>
+                            </div>
+                          )}
+
+                        {textContent && (
+                          <FormattedMessageContent content={textContent} />
+                        )}
+
+                        {!isMsgStreaming && textContent && (
+                          <div className="flex items-center gap-3 pt-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               type="button"
-                              onClick={() => void handleCopy(m.id, m.content)}
+                              onClick={() => void handleCopy(m.id, textContent)}
                               className="flex items-center gap-1 hover:text-foreground transition-colors"
                               title="Copier la réponse"
                             >
@@ -643,10 +710,10 @@ export default function PoufaAiPage() {
                               )}
                             </button>
 
-                            {lastPrompt && (
+                            {isLastAssistant && (
                               <button
                                 type="button"
-                                onClick={() => void sendMessage(lastPrompt)}
+                                onClick={() => void regenerate()}
                                 className="flex items-center gap-1 hover:text-foreground transition-colors"
                                 title="Régénérer la réponse"
                               >
@@ -673,10 +740,12 @@ export default function PoufaAiPage() {
             <PoufaComposer
               value={input}
               onChange={setInput}
-              onSubmit={() => void sendMessage(input)}
-              onStop={handleStop}
+              onSubmit={() => void handleSendText(input)}
+              onStop={() => void stop()}
               isStreaming={isStreaming}
               badgeLabel="Bande active B-2026-014"
+              modelTier={modelTier}
+              onModelTierChange={setModelTier}
             />
           </div>
         </div>
