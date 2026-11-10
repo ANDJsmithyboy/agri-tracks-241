@@ -18,6 +18,7 @@ const isPublicRoute = createRouteMatcher([
   "/bandes(.*)",
   "/tracabilite(.*)",
   "/ia(.*)",
+  "/api/ai(.*)",
   "/api/android(.*)",
   "/api/health(.*)",
   "/manifest.webmanifest(.*)",
